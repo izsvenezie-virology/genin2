@@ -1,5 +1,7 @@
 # Genin2
 
+Genin2 is a lightining-fast bioinformatic tool to predict genotypes for H5 viruses belonging to the European clade 2.3.4.4b.
+
 ## Table of contents:
 
 - [Features](#features)
@@ -111,7 +113,7 @@ ggaa...
 ### *Q: Are my sequences required to have all segments?*
 #### Answer:
 
-No, any number of available segments is accepted by the program. Clearly, missing genes might prevent the unique assignment of a genotype, but you will nonetheless gain knowledge on the versions of the processed segments.
+No, any number of available segments is accepted by the program. Clearly, missing genes might prevent the unique assignment of a genotype, but you will nonetheless gain knowledge on the versions of the processed segments. Moreover, HA and MP are ignored regardless: the former is assumed from the clade, while the latter, as of now, is only present in the dataset with the version "20".
 
 ### *Q: Do sequences need to be complete?*
 #### Answer:
