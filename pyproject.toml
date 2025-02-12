@@ -16,7 +16,6 @@ dependencies = [
     "click >=8.0.0",
     "importlib-resources >=1.3",
     "joblib >=1.4.2",
-    "scikit-learn >=1.6.1",
 ]
 
 [project.readme]
@@ -28,10 +27,11 @@ file = "LICENSE"
 content-type = "text/markdown"
 
 [project.urls]
-Home-page = "https://github.com/izsvenezie-virology/Genin2"
+"Homepage" = "https://github.com/izsvenezie-virology/Genin2"
+"Bug Tracker" = "https://github.com/izsvenezie-virology/Genin2/issues"
 
 [project.scripts]
-genin2 = "cli:start_cli"
+genin2 = "genin2.cli:start_cli"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -45,4 +45,4 @@ namespaces = true
 genin2 = ["models.xz", "compositions.tsv"]
 
 [tool.setuptools.dynamic]
-version = {attr = "__version__"}
+version = {attr = "genin2.genin2_core.__version__"}
