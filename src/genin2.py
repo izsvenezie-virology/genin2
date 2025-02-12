@@ -3,6 +3,10 @@ from Bio.Align import PairwiseAligner
 from typing import List, Tuple
 
 
+__version__ = '2.0.0'
+__author__ = 'Alessandro Sartori'
+__contact__ = 'asartori@izsvenezie.it'
+
 MIN_VPROB_THR = 0.4 # Minimum probability for keeping a version prediction (as low confidence)
 VPROB_THR = 0.6 # Minimum probability for accepting a version prediction (as good confidence)
 MAX_COMPATIBLE_GENS = 3 # Maximum number of compatible genotypes to accept. If the prediction returns more, they will be discarded as unreliable
@@ -162,11 +166,11 @@ def get_compatible_genotypes(versions: dict[str, str]) -> List[str]:
     return list(gset.keys())
 
 
-def read_fasta(fname):
+def read_fasta(file):
     sample_name = None
     seq = []
     
-    for line in open(fname):
+    for line in file:
         if not (line := line.strip()):
             continue
 
@@ -182,11 +186,11 @@ def read_fasta(fname):
         yield sample_name, ''.join(seq).upper()
 
 
-def read_samples(fname):
+def read_samples(file):
     curr_sample_name = None
     sample = {}
 
-    for name, seq in read_fasta(fname):    
+    for name, seq in read_fasta(file):    
         name, seg_name = name.rsplit('_', 1)
         
         if name != curr_sample_name:
@@ -206,21 +210,20 @@ def read_samples(fname):
         yield curr_sample_name, sample
 
 
-def run(in_fname: str, out_fname: str):
+def run(in_file: str, out_file: str):
     logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
     logging.info("Initializing")
     init_data()
 
     try:
-        out_file = open(out_fname, 'w')
         out_file.write('Sample Name\tGenotype\t' + '\t'.join(output_segments_order) + '\tNotes\n')
     except Exception as e:
-        critical_error(f"Couldn't write to output file '{out_fname}'", e)
+        critical_error(f"Couldn't write to output file '{out_file}'", e)
 
     logging.info("Starting analysis...")
     start_time = time.time()
     tot_samples, tot_seqs = 0, 0
-    for sample_name, sample in read_samples(in_fname):
+    for sample_name, sample in read_samples(in_file):
         logging.info(f"Processing {len(sample)} segments for {sample_name}")
         (genotype, genotype_notes), ver_predictions = predict_sample(sample)
         tot_samples += 1
