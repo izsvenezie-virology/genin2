@@ -1,4 +1,4 @@
-import importlib_resources, joblib, itertools, sys, csv, logging
+import importlib_resources, joblib, itertools, sys, csv, logging, time
 from Bio.Align import PairwiseAligner
 from typing import List, Tuple
 
@@ -64,7 +64,7 @@ def init_data() -> None:
 
 
 def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, str]]:
-    ver_predictions: dict[str, str] = {seg: (None, 'missing') for seg in alignment_refs.keys()}
+    ver_predictions: dict[str, str] = {}
     low_confidence = False
 
     for seg_name, seq in sample.items():
@@ -73,18 +73,25 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, str]]:
         if pred_v == '?' or pred_p < MIN_VPROB_THR:
             ver_predictions[seg_name] = ('?', 'unassigned')
             low_confidence = True
-        if pred_p > VPROB_THR:
+        elif pred_p > VPROB_THR:
             ver_predictions[seg_name] = (pred_v, None)
         else:
             ver_predictions[seg_name] = (pred_v + '*', 'low confidence')
+            low_confidence = True
+    
+    for seg_name in alignment_refs.keys():
+        if seg_name not in ver_predictions:
+            ver_predictions[seg_name] = ('?', 'missing')
             low_confidence = True
 
     genotype = (None, None)
     compatible = get_compatible_genotypes({s: v for s, (v, _) in ver_predictions.items()})
     if len(compatible) == 1 and not low_confidence:
         genotype = (compatible[0], None)
-    elif len(compatible) == 0 or len(compatible) > MAX_COMPATIBLE_GENS:
-        genotype = ('[unassigned]', 'unassigned')
+    elif len(compatible) == 0:
+        genotype = ('[unassigned]', 'unknown composition')
+    elif len(compatible) > MAX_COMPATIBLE_GENS:
+        genotype = ('[unassigned]', 'insufficient data')
     else:
         genotype = ('[unassigned]', f'compatible with {', '.join(compatible)}')
 
@@ -190,7 +197,7 @@ def read_samples(fname):
 
         if seg_name not in alignment_refs.keys():
             if seg_name != 'HA' and seg_name != 'MP':
-                print(f"Warning: segment {seg_name} is not recognized.")
+                logger.warn(f"Segment {seg_name} is not recognized")
             continue
         
         sample[seg_name] = seq
@@ -211,10 +218,13 @@ def run(in_fname: str, out_fname: str):
         critical_error(f"Couldn't write to output file '{out_fname}'", e)
 
     logging.info("Starting analysis...")
+    start_time = time.time()
+    tot_samples, tot_seqs = 0, 0
     for sample_name, sample in read_samples(in_fname):
         logging.info(f"Processing {len(sample)} segments for {sample_name}")
         (genotype, genotype_notes), ver_predictions = predict_sample(sample)
-        logging.info(f'Prediction: {genotype}, Notes: {genotype_notes}')
+        tot_samples += 1
+        tot_seqs += len(sample)
 
         notes_col = []
         if genotype_notes is not None:
@@ -226,9 +236,13 @@ def run(in_fname: str, out_fname: str):
                 tsv_row.append('20')
             else:
                 ver, ver_notes = ver_predictions[seg]
-                tsv_row.append(ver)
+                tsv_row.append(ver or '?')
                 if ver_notes is not None:
                     notes_col.append(f'{seg}: {ver_notes}')
         
         tsv_row.append('; '.join(notes_col))
-        out_file.writelines(['\t'.join(tsv_row)])
+        out_file.write('\t'.join(tsv_row) + '\n')
+    
+    tot_time_s = int(time.time() - start_time)
+    h, m, s = (tot_time_s // 3600, tot_time_s % 3600 // 60, tot_time_s % 3600 % 60)
+    logger.info(f"Processed {tot_samples} samples ({tot_seqs} sequences) in {h}h {m}m {s}s")
