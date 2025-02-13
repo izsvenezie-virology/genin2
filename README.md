@@ -16,10 +16,10 @@ Genin2 is a lightining-fast bioinformatic tool to predict genotypes for H5 virus
 
 ## Features
 
-- 🐧 **Cross-platform**: Genin2 can be run on any platform that supports the Python interpreter. Including, but not limited to: Windows, Linux, MacOS.
-- 🪶 **Extremely lightweight**: the prediction models weight less than 1 MB
-- 🌸 **Easy on the resources**: genin2 can be run on any laptop; 1 CPU and 200 MB of RAM is all it takes
-- ⚡ **Lightning-fast**: on a single 2.30 GHz core, Genin2 can process more than 1'200 sequences per minute
+- :penguin: **Cross-platform**: Genin2 can be run on any platform that supports the Python interpreter. Including, but not limited to: Windows, Linux, MacOS.
+- :balloon: **Extremely lightweight**: the prediction models weight less than 1 MB
+- :cherry_blossom: **Easy on the resources**: genin2 can be run on any laptop; 1 CPU and 200 MB of RAM is all it takes
+- :zap: **Lightning-fast**: on a single 2.30 GHz core, Genin2 can process more than 1'200 sequences per minute
 
 ## Installation
 
@@ -100,7 +100,7 @@ The results table consists of 10 columns:
 #### Answer:
 
 Yes. The header should follow this format:
-- Start with the ` character
+- Start with the `>` character
 - Contain a sample identifier, such as `A/species/nation/XYZ`. This part can contain any text you wish, and it will be used to group segments together. Ensure it is the same for all segments belonging to the same sample, and that there are no duplicates across different samples.
 - End with the unsercsore character (`_`) and one of the following segment names: `PB2`, `PB1`, `PA`, `HA`, `NP`, `NA`, `MP`, `NS`. The correct association between sequence and segment is essential for the correct choice of the prediction parameters.
 A valid header might look like this: `>A/chicken/Italy/ID_XXYYZZ/1997_PA`
