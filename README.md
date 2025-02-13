@@ -1,6 +1,6 @@
 # Genin2
 
-Genin2 is a lightining-fast bioinformatic tool to predict genotypes for H5 viruses belonging to the European clade 2.3.4.4b.
+Genin2 is a lightining-fast bioinformatic tool to predict genotypes for clade 2.3.4.4b H5Nx viruses collected in Europe since October 2020. Genotypes are assigned using the methods described in [this article](https://doi.org/10.1093/ve/veae027). Genin2 identifies only epidemiologically relevant European genotypes, i.e., detected in at least 3 viruses collected from at least 2 countries. You can inspect the up-to-date list of supported genotypes in [this file](src/genin2/compositions.tsv).
 
 ## Table of contents:
 
@@ -89,12 +89,19 @@ The results table consists of 10 columns:
 
 ## FAQs
 
+- General
+  - [Which genotypes are recognized by Genin2?](#q-which-genotypes-are-recognized-by-genin2)
 - About input data
   - [Do I need to use a particular format for the FASTA headers?](#q-do-i-need-to-use-a-particular-format-for-the-fasta-headers)
   - [Can the input file contain more than a single sample?](#q-can-the-input-file-contain-more-than-a-single-sample)
   - [Are my sequences required to have all segments?](#q-are-my-sequences-required-to-have-all-segments)
   - [Do sequences need to be complete?](#q-do-sequences-need-to-be-complete)
 
+
+### *Q: Which genotypes are recognized by Genin2?*
+#### Answer:
+
+Genin2's prediction models are regularely updated to include relevant new genotypes. You can inspect the table on which predictions are based upon by opening the file [src/genin2/compositions.tsv](src/genin2/compositions.tsv). Generally speaking, we aim to support all epidemiologically relevant European genotypes, i.e., those observed in at least 3 occurences in at least 2 different coutnries.
 
 ### *Q: Do I need to use a particular format for the FASTA headers?*
 #### Answer:
