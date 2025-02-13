@@ -1,6 +1,6 @@
 import importlib_resources, joblib, itertools, sys, csv, logging, time
 from Bio.Align import PairwiseAligner
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 
 __version__ = '2.0.0'
@@ -18,7 +18,7 @@ output_segments_order = ['PB2', 'PB1', 'PA', 'NP', 'NA', 'MP', 'NS']
 logger = logging.getLogger(__name__)
 
 
-def critical_error(msg: str, ex: Exception|None = None) -> None:
+def critical_error(msg: str, ex: Optional[Exception] = None) -> None:
     if ex is not None:
         logger.critical('%s (%s, %s)', msg, type(ex).__name__, str(ex))
     else:

@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Genin2 is a lightining-fast bioinformatic tool to predict genotypes for H5 viruses belonging to the European clade 2.3.4.4b"
 dynamic = ["version"]
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 dependencies = [
     "biopython >=1.81",
     "click >=8.0.0",
