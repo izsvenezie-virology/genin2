@@ -64,7 +64,7 @@ def init_data() -> None:
             importlib_resources.files('genin2').joinpath('models.xz')
         )
     except Exception as e:
-        critical_error("Couldn't load prediction models")
+        critical_error("Couldn't load prediction models", e)
 
 
 def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, str]]:
