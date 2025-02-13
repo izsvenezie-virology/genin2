@@ -97,7 +97,7 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, str]]:
     elif len(compatible) > MAX_COMPATIBLE_GENS:
         genotype = ('[unassigned]', 'insufficient data')
     else:
-        genotype = ('[unassigned]', f'compatible with {', '.join(compatible)}')
+        genotype = ('[unassigned]', f'compatible with {", ".join(compatible)}')
 
     return genotype, ver_predictions
 
