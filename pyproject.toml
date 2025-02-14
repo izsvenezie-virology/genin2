@@ -28,8 +28,8 @@ file = "LICENSE"
 content-type = "text/markdown"
 
 [project.urls]
-"Homepage" = "https://github.com/izsvenezie-virology/Genin2"
-"Bug Tracker" = "https://github.com/izsvenezie-virology/Genin2/issues"
+"Homepage" = "https://github.com/izsvenezie-virology/genin2"
+"Bug Tracker" = "https://github.com/izsvenezie-virology/genin2/issues"
 
 [project.scripts]
 genin2 = "genin2.cli:start_cli"

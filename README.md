@@ -116,29 +116,7 @@ A valid header might look like this: `>A/chicken/Italy/ID_XXYYZZ/1997_PA`
 ### *Q: Can the input file contain more than a single sample?*
 #### Answer:
   
-Yes, you can use how many samples you wish. However, please take care to group the segments by sample. For instace, a valid file might look like this:
-
-```
->sample_1_PB2
-agat...
->sample_1_NP
-accg...                VALID file!
->sample_2_PB2     <--- Here, data for sample_1 ends,
-ggaa...                and sample_2 starts
->sample_2_NP
-tcag...
-```
-
-```
->sample_1_PB2
-agat...
->sample_2_NP
-tcag...                INVALID file!
->sample_1_NP      <--- Here, sample_1 is referenced again,
-accg...                but its chunk had already ended
->sample_2_PB2
-ggaa...
-```
+Yes, you can use how many samples you wish.
 
 ### *Q: Are my sequences required to have all segments?*
 #### Answer:
@@ -151,6 +129,11 @@ No, any number of available segments is accepted by the program. Clearly, missin
 No, not necessarily. Partial sequences are accepted, but the prediction will be based solely on the available data. Sometimes a chunk of sequence is enough for a confident discrimination, and some other times is not.
 
 ## Cite Genin2
+
+We are currently writing the paper.
+Until the publication please cite the GitHub repository:
+
+[https://github.com/izsvenezie-virology/genin2](https://github.com/izsvenezie-virology/genin2)
 
 ## License
 

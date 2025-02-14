@@ -73,9 +73,10 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, str]]:
     low_confidence = False
 
     for seg_name, seq in sample.items():
-        valid_nts = len(seq) - seq.upper().count('N')
-        if (valid_nts < len(alignment_refs[seg_name]) * MIN_SEQ_COV):
-            ver_predictions[seg_name] = ('?', 'low quality')
+        seq_cov = (len(seq) - seq.upper().count('N')) / len(alignment_refs[seg_name])
+        if (seq_cov < MIN_SEQ_COV):
+            ver_predictions[seg_name] = ('?', f'low quality ({int(seq_cov*100)}% valid)')
+            low_confidence = True
             continue
         
         pred_v, pred_p = predict_seg_version(seg_name, seq)
@@ -86,7 +87,7 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, str]]:
         elif pred_p > VPROB_THR:
             ver_predictions[seg_name] = (pred_v, None)
         else:
-            ver_predictions[seg_name] = (pred_v + '*', 'low confidence')
+            ver_predictions[seg_name] = (pred_v + '*', f'low confidence ({pred_p:.2f})')
             low_confidence = True
     
     for seg_name in alignment_refs.keys():
@@ -192,28 +193,29 @@ def read_fasta(file):
         yield sample_name, ''.join(seq).upper()
 
 
-def read_samples(file):
-    curr_sample_name = None
-    sample = {}
+def preload_samples(file):
+    samples = {}
 
-    for name, seq in read_fasta(file):    
-        name, seg_name = name.rsplit('_', 1)
-        
-        if name != curr_sample_name:
-            if curr_sample_name is not None:
-                yield curr_sample_name, sample
-            sample.clear()
-            curr_sample_name = name
-
-        if seg_name not in alignment_refs.keys():
-            if seg_name != 'HA' and seg_name != 'MP':
-                logger.warn(f"Segment {seg_name} is not recognized")
+    for name, seq in read_fasta(file):
+        try:
+            name, seg_name = name.rsplit('_', 1)
+        except:
+            logger.error("Discarding sequence, invalid FASTA header: %s", name)
             continue
         
-        sample[seg_name] = seq
+        if seg_name not in alignment_refs.keys():
+            if seg_name != 'HA' and seg_name != 'MP':
+                logger.warning("Segment '%s' in sample '%s' is not recognized", seg_name, name)
+            continue
+        
+        if name not in samples:
+            samples[name] = {}
+
+        if seg_name in samples[name]:
+            logger.warning("Segment %s for sample %s was defined multiple times (keeping the last)", seg_name, name)
+        samples[name][seg_name] = seq
     
-    if curr_sample_name is not None:
-        yield curr_sample_name, sample
+    return samples
 
 
 def run(in_file: str, out_file: str, loglevel: str):
@@ -229,13 +231,17 @@ def run(in_file: str, out_file: str, loglevel: str):
     except Exception as e:
         critical_error(f"Couldn't write to output file '{out_file}'", e)
 
+    logging.info("Preloading samples")
+    start_time = time.time()
+    samples = preload_samples(in_file)
+    logging.info("Read %d samples in %.1f seconds", len(samples), time.time() - start_time)
+
     logging.info("Starting analysis...")
     start_time = time.time()
-    tot_samples, tot_seqs = 0, 0
-    for sample_name, sample in read_samples(in_file):
+    tot_seqs = 0
+    for sample_name, sample in samples.items():
         logging.info(f"Processing {len(sample)} segments for {sample_name}")
         (genotype, genotype_notes), ver_predictions = predict_sample(sample)
-        tot_samples += 1
         tot_seqs += len(sample)
 
         notes_col = []
@@ -257,4 +263,4 @@ def run(in_file: str, out_file: str, loglevel: str):
     
     tot_time_s = int(time.time() - start_time)
     h, m, s = (tot_time_s // 3600, tot_time_s % 3600 // 60, tot_time_s % 3600 % 60)
-    logger.info(f"Processed {tot_samples} samples ({tot_seqs} sequences) in {h}h {m}m {s}s")
+    logger.info(f"Processed {len(samples)} samples ({tot_seqs} sequences) in {h}h {m}m {s}s")
