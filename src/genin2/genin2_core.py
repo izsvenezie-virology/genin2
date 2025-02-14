@@ -7,8 +7,9 @@ __version__ = '2.0.0'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
+LOW_QUAL_THR = 0.5 # Maximum fraction of unknown bases (Ns) in a sequence
 MIN_VPROB_THR = 0.4 # Minimum probability for keeping a version prediction (as low confidence)
-VPROB_THR = 0.6 # Minimum probability for accepting a version prediction (as good confidence)
+VPROB_THR = 0.75 # Minimum probability for accepting a version prediction (as good confidence)
 MAX_COMPATIBLE_GENS = 3 # Maximum number of compatible genotypes to accept. If the prediction returns more, they will be discarded as unreliable
 
 alignment_refs: dict[str, str] = {}
@@ -72,6 +73,11 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, str]]:
     low_confidence = False
 
     for seg_name, seq in sample.items():
+        unk_nts = sum(1 for _ in seq if _ in 'nN')
+        if unk_nts >= len(seq) * LOW_QUAL_THR:
+            ver_predictions[seg_name] = ('?', 'low quality')
+            continue
+        
         pred_v, pred_p = predict_seg_version(seg_name, seq)
 
         if pred_v == '?' or pred_p < MIN_VPROB_THR:
@@ -210,8 +216,11 @@ def read_samples(file):
         yield curr_sample_name, sample
 
 
-def run(in_file: str, out_file: str):
-    logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
+def run(in_file: str, out_file: str, loglevel: str):
+    logging.basicConfig(
+        level={'dbg': logging.DEBUG, 'inf': logging.INFO, 'wrn': logging.WARN, 'err': logging.ERROR}[loglevel],
+        format='[%(levelname)s] %(message)s'
+    )
     logging.info("Initializing")
     init_data()
 
