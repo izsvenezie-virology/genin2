@@ -7,7 +7,7 @@ __version__ = '2.0.0'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
-LOW_QUAL_THR = 0.5 # Maximum fraction of unknown bases (Ns) in a sequence
+MIN_SEQ_COV = 0.6 # Minimum fraction of valid input NTs wrt the total length of the ref seq
 MIN_VPROB_THR = 0.4 # Minimum probability for keeping a version prediction (as low confidence)
 VPROB_THR = 0.75 # Minimum probability for accepting a version prediction (as good confidence)
 MAX_COMPATIBLE_GENS = 3 # Maximum number of compatible genotypes to accept. If the prediction returns more, they will be discarded as unreliable
@@ -73,8 +73,8 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, str]]:
     low_confidence = False
 
     for seg_name, seq in sample.items():
-        unk_nts = sum(1 for _ in seq if _ in 'nN')
-        if unk_nts >= len(seq) * LOW_QUAL_THR:
+        valid_nts = len(seq) - seq.upper().count('N')
+        if (valid_nts < len(alignment_refs[seg_name]) * MIN_SEQ_COV):
             ver_predictions[seg_name] = ('?', 'low quality')
             continue
         
