@@ -9,6 +9,8 @@ Genin2 is a lightining-fast bioinformatic tool to predict genotypes for clade 2.
     - [Method 1: PIP](#method-1-pip)
     - [Method 2: Conda](#method-2-conda)
 - [Usage](#usage)
+  - [Input guidelines](#input-guidelines)
+  - [Output format and interpretation](#output-format-and-interpretation)
 - [FAQs](#faqs)
 - [How to cite Genin2](#cite-genin2)
 - [License](#license)
@@ -48,7 +50,13 @@ conda install -c bioconda genin2
 Launching **Genin2** is as easy as:
 
 ```sh
-genin2 input.fa output.tsv
+genin2 -i input.fa -o output.tsv
+```
+
+To see the complete list of supported parameters and their effects use the `-h` or `--help` option:
+
+```sh
+genin2 --help
 ```
 
 ### Input guidelines
@@ -85,7 +93,7 @@ The results table consists of 10 columns:
 
   Details on failed or discarded predictions and assigments. This column contains information about these events:
   - Genotypes might be `[unassigned]` because of an unknown composition (*"unknown composition"*), or because accepted versions are too few and the composition matches more than a single genotype (*"insufficient data"*). In the latter case however, if the set of matches is small they are listed as "*compatible with*".
-  - Segment versions might be `?` if the segment was not present in the input file (*"missing*"), the sequence had poor quality or many `N`s or gaps (*"low quality"*), if the prediction reported insufficient confidence (*"low confidence*"), or the classification failed in general (*"unassigned"*).
+  - Segment versions might be `?` if the segment was not present in the input file (*"missing*"), the sequence had insufficient coverage (*"low quality"*, see [FAQs](#faqs) for details), if the prediction reported insufficient confidence (*"low confidence*"), or the classification failed in general (*"unassigned"*).
 
 ## FAQs
 
@@ -103,13 +111,20 @@ The results table consists of 10 columns:
 
 Genin2's prediction models are regularely updated to include relevant new genotypes. You can inspect the table on which predictions are based upon by opening the file [src/genin2/compositions.tsv](src/genin2/compositions.tsv). Generally speaking, we aim to support all epidemiologically relevant European genotypes, i.e., those observed in at least 3 occurences in at least 2 different coutnries.
 
+### *Q: What does "low quality" mean when a sequence is flagged as discarded?*
+#### Answer:
+
+Internally, **Genin2** contains some genome references used to normalize the encoding process of the models. If an input sequence does not cover a significant enough portion of the relative reference, it is considered too little informative for a reliable prediction and is discarded. The valid portion of a sequence consists in the ratio between the length of the input sequence minus the number of `N`s, divided by the length of the internal reference.
+
+By default, this minimum ratio is set to 0.9. If you wish to allow predictions on more approximate sequences, you can manually set this parameter on the commandline with the `--min-seq-cov` option.
+
 ### *Q: Do I need to use a particular format for the FASTA headers?*
 #### Answer:
 
 Yes. The header should follow this format:
 - Start with the `>` character
 - Contain a sample identifier, such as `A/species/nation/XYZ`. This part can contain any text you wish, and it will be used to group segments together. Ensure it is the same for all segments belonging to the same sample, and that there are no duplicates across different samples.
-- End with the unsercsore character (`_`) and one of the following segment names: `PB2`, `PB1`, `PA`, `HA`, `NP`, `NA`, `MP`, `NS`. The correct association between sequence and segment is essential for the correct choice of the prediction parameters.
+- End with the undercsore character (`_`) and one of the following segment names: `PB2`, `PB1`, `PA`, `HA`, `NP`, `NA`, `MP`, `NS`. The correct association between sequence and segment is essential for the correct choice of the prediction parameters.
 A valid header might look like this: `>A/chicken/Italy/ID_XXYYZZ/1997_PA`
 
 

@@ -1,5 +1,6 @@
 import importlib_resources, joblib, itertools, sys, csv, logging, time
 from Bio.Align import PairwiseAligner
+import click
 from typing import List, Tuple, Optional
 
 
@@ -7,9 +8,9 @@ __version__ = '2.0.0'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
-MIN_SEQ_COV = 0.6 # Minimum fraction of valid input NTs wrt the total length of the ref seq
+MIN_SEQ_COV = 0.9 # Minimum fraction of valid input NTs wrt the total length of the ref seq
 MIN_VPROB_THR = 0.4 # Minimum probability for keeping a version prediction (as low confidence)
-VPROB_THR = 0.75 # Minimum probability for accepting a version prediction (as good confidence)
+VPROB_THR = 0.7 # Minimum probability for accepting a version prediction (as good confidence)
 MAX_COMPATIBLE_GENS = 3 # Maximum number of compatible genotypes to accept. If the prediction returns more, they will be discarded as unreliable
 
 alignment_refs: dict[str, str] = {}
@@ -87,7 +88,7 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, str]]:
         elif pred_p > VPROB_THR:
             ver_predictions[seg_name] = (pred_v, None)
         else:
-            ver_predictions[seg_name] = (pred_v + '*', f'low confidence ({pred_p:.2f})')
+            ver_predictions[seg_name] = (pred_v, f'low confidence ({pred_p:.2f})')
             low_confidence = True
     
     for seg_name in alignment_refs.keys():
@@ -218,13 +219,17 @@ def preload_samples(file):
     return samples
 
 
-def run(in_file: str, out_file: str, loglevel: str):
+def run(in_file: str, out_file: str, **kwargs):
     logging.basicConfig(
-        level={'dbg': logging.DEBUG, 'inf': logging.INFO, 'wrn': logging.WARN, 'err': logging.ERROR}[loglevel],
+        level={'dbg': logging.DEBUG, 'inf': logging.INFO, 'wrn': logging.WARN, 'err': logging.ERROR}[kwargs['loglevel']],
         format='[%(levelname)s] %(message)s'
     )
     logging.info("Initializing")
     init_data()
+
+    if 'min_seq_cov' in kwargs:
+        global MIN_SEQ_COV
+        MIN_SEQ_COV = kwargs['min_seq_cov']
 
     try:
         out_file.write('Sample Name\tGenotype\t' + '\t'.join(output_segments_order) + '\tNotes\n')
@@ -254,13 +259,15 @@ def run(in_file: str, out_file: str, loglevel: str):
                 tsv_row.append('20')
             else:
                 ver, ver_notes = ver_predictions[seg]
-                tsv_row.append(ver or '?')
                 if ver_notes is not None:
                     notes_col.append(f'{seg}: {ver_notes}')
+                    if ver_notes.startswith('low confidence'):
+                        ver = ver + '*'
+                tsv_row.append(ver or '?')
         
         tsv_row.append('; '.join(notes_col))
         out_file.write('\t'.join(tsv_row) + '\n')
-    
+
     tot_time_s = int(time.time() - start_time)
     h, m, s = (tot_time_s // 3600, tot_time_s % 3600 // 60, tot_time_s % 3600 % 60)
     logger.info(f"Processed {len(samples)} samples ({tot_seqs} sequences) in {h}h {m}m {s}s")
