@@ -29,6 +29,12 @@ Genin2 is a lightining-fast bioinformatic tool to predict genotypes for clade 2.
 pip install genin2
 ```
 
+To update the program and include any new genotype that might have been added, run:
+
+```sh
+pip install --upgrade genin2
+```
+
 ## Usage
 
 Launching **Genin2** is as easy as:

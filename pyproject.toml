@@ -24,6 +24,7 @@ dependencies = [
     "biopython >=1.81",
     "click >=8.0.0",
     "importlib-resources >=1.3",
+    "numpy >= 2.0.0",
     "joblib >=1.4.2",
     "scikit-learn >=1.6.1"
 ]

@@ -1,10 +1,9 @@
 import importlib_resources, joblib, itertools, sys, csv, logging, time
 from Bio.Align import PairwiseAligner
-import click
 from typing import List, Tuple, Optional
 
 
-__version__ = '2.0.0'
+__version__ = '2.0.1'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
@@ -120,6 +119,7 @@ def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, float]:
 
     model = models[seg_name]
     v_probs = model.predict_proba([encoded_seq])[0]
+    logger.debug(seg_name + ': ' + '\t'.join(f'{c}:{v:.2f}' for c, v in zip(model.classes_, v_probs) if v > 0.1))
 
     max_p, max_v = 0, '?'
     for c, p in zip(model.classes_, v_probs):
