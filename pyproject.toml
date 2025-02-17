@@ -9,8 +9,17 @@ authors = [
     {name = "Edoardo Giussani", email = "egiussani@izsvenezie.it"},
 ]
 description = "Genin2 is a lightining-fast bioinformatic tool to predict genotypes for H5 viruses belonging to the European clade 2.3.4.4b"
+keywords = ["avian-influenza", "genotype-inspector", "genotype-predictor"]
 dynamic = ["version"]
 requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)"
+]
 dependencies = [
     "biopython >=1.81",
     "click >=8.0.0",
@@ -25,7 +34,7 @@ content-type = "text/markdown"
 
 [project.license]
 file = "LICENSE"
-content-type = "text/markdown"
+content-type = "text/plain"
 
 [project.urls]
 "Homepage" = "https://github.com/izsvenezie-virology/genin2"

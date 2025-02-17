@@ -8,7 +8,7 @@ __version__ = '2.0.0'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
-MIN_SEQ_COV = 0.9 # Minimum fraction of valid input NTs wrt the total length of the ref seq
+MIN_SEQ_COV = 0.7 # Minimum fraction of valid input NTs wrt the total length of the ref seq
 MIN_VPROB_THR = 0.4 # Minimum probability for keeping a version prediction (as low confidence)
 VPROB_THR = 0.7 # Minimum probability for accepting a version prediction (as good confidence)
 MAX_COMPATIBLE_GENS = 3 # Maximum number of compatible genotypes to accept. If the prediction returns more, they will be discarded as unreliable
@@ -222,7 +222,8 @@ def preload_samples(file):
 def run(in_file: str, out_file: str, **kwargs):
     logging.basicConfig(
         level={'dbg': logging.DEBUG, 'inf': logging.INFO, 'wrn': logging.WARN, 'err': logging.ERROR}[kwargs['loglevel']],
-        format='[%(levelname)s] %(message)s'
+        format='[%(levelname)s] %(message)s',
+        stream=sys.stderr
     )
     logging.info("Initializing")
     init_data()

@@ -6,8 +6,6 @@ Genin2 is a lightining-fast bioinformatic tool to predict genotypes for clade 2.
 
 - [Features](#features)
 - [Installation](#installation)
-    - [Method 1: PIP](#method-1-pip)
-    - [Method 2: Conda](#method-2-conda)
 - [Usage](#usage)
   - [Input guidelines](#input-guidelines)
   - [Output format and interpretation](#output-format-and-interpretation)
@@ -25,24 +23,10 @@ Genin2 is a lightining-fast bioinformatic tool to predict genotypes for clade 2.
 
 ## Installation
 
-**Genin2** is compatible with Windows, Linux, and macOS. It can be installed in two ways:
-- Using Python's package manager (PIP)
-- Using the Conda package management system
-
-### Method 1: PIP
-
-Before proceeding, please ensure you have already installed [Python](https://www.python.org/downloads/) and [Pip](https://pypi.org/project/pip/) (the latter is usually already included with the Python installation). Then, open a terminal and run:
+**Genin2** is compatible with Windows, Linux, and macOS. Before proceeding, please ensure you have already installed [Python](https://www.python.org/downloads/) and [Pip](https://pypi.org/project/pip/) (the latter is usually already included with the Python installation). Then, open a terminal and run:
 
 ```sh
 pip install genin2
-```
-
-### Method 2: Conda
-
-**Genin2** is available on Conda from the [bioconda](https://bioconda.github.io/genin2) channel. Ensure you have installed [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) and run:
-
-```sh
-conda install -c bioconda genin2
 ```
 
 ## Usage
@@ -50,7 +34,7 @@ conda install -c bioconda genin2
 Launching **Genin2** is as easy as:
 
 ```sh
-genin2 -i input.fa -o output.tsv
+genin2 -o output.tsv input.fa
 ```
 
 To see the complete list of supported parameters and their effects use the `-h` or `--help` option:
@@ -116,7 +100,7 @@ Genin2's prediction models are regularely updated to include relevant new genoty
 
 Internally, **Genin2** contains some genome references used to normalize the encoding process of the models. If an input sequence does not cover a significant enough portion of the relative reference, it is considered too little informative for a reliable prediction and is discarded. The valid portion of a sequence consists in the ratio between the length of the input sequence minus the number of `N`s, divided by the length of the internal reference.
 
-By default, this minimum ratio is set to 0.9. If you wish to allow predictions on more approximate sequences, you can manually set this parameter on the commandline with the `--min-seq-cov` option.
+By default, this minimum ratio is set to 0.7. If you wish to raise or relax this limit, you can manually set it on the commandline with the `--min-seq-cov` option.
 
 ### *Q: Do I need to use a particular format for the FASTA headers?*
 #### Answer:
