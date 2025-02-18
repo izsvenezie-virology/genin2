@@ -3,7 +3,7 @@ from Bio.Align import PairwiseAligner
 from typing import List, Tuple, Optional
 
 
-__version__ = '2.0.1'
+__version__ = '2.0.2'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
@@ -219,6 +219,34 @@ def preload_samples(file):
     return samples
 
 
+# def check_update():
+#     try:
+#         import requests, tempfile
+#         from pathlib import Path
+
+#         check_interval_d = 5
+#         tmp_file = Path(tempfile.gettempdir()).joinpath('genin2_tmp')
+
+#         if not tmp_file.exists():
+#             tmp_file.touch()
+
+#         last_check_delta_d = (time.time() - tmp_file.stat().st_mtime) // 24 // 60 // 60
+#         logger.info("Last checked for updates %d days ago", last_check_delta_d)
+
+#         if last_check_delta_d > check_interval_d:
+#             logger.info("Checking for updates...")
+#             tmp_file.touch()
+
+#             res = requests.get(f'https://pypi.org/pypi/genin2/json', timeout=4)
+#             latest_version = res.json()['info']['version']
+#             logger.info("Latest version on PyPi: %s, current version: %s", latest_version, __version__)
+            
+#             global new_version_available
+#             new_version_available = (latest_version == __version__)
+#     except Exception as e:
+#         logger.warning("Could not check for updates. %s: %s", type(e).__name__, str(e))
+
+
 def run(in_file: str, out_file: str, **kwargs):
     logging.basicConfig(
         level={'dbg': logging.DEBUG, 'inf': logging.INFO, 'wrn': logging.WARN, 'err': logging.ERROR}[kwargs['loglevel']],
@@ -269,6 +297,6 @@ def run(in_file: str, out_file: str, **kwargs):
         tsv_row.append('; '.join(notes_col))
         out_file.write('\t'.join(tsv_row) + '\n')
 
-    tot_time_s = int(time.time() - start_time)
+    tot_time_s = time.time() - start_time
     h, m, s = (tot_time_s // 3600, tot_time_s % 3600 // 60, tot_time_s % 3600 % 60)
-    logger.info(f"Processed {len(samples)} samples ({tot_seqs} sequences) in {h}h {m}m {s}s")
+    logger.info(f"Processed {len(samples)} samples ({tot_seqs} sequences) in {h:.0f}h {m:.0f}m {s:.1f}s")

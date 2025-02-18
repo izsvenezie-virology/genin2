@@ -8,6 +8,6 @@ from genin2.genin2_core import __version__, __author__, __contact__, run
 @click.argument('input_file', type=click.File('r'))
 @click.option('-o', '--output-file', type=click.File('w'), help='Output TSV', default='-')
 @click.option('--loglevel', type=click.Choice(['dbg', 'inf', 'wrn', 'err'], case_sensitive=False), default='wrn', help='Verbosity of the logging messages', show_default=True)
-@click.option('--min-seq-cov', type=click.FloatRange(0, 1), help='The minimum fraction of a sequence that needs to be valid (no Ns) to be accepted for prediction', default=0.7, show_default=True)
+@click.option('--min-seq-cov', type=click.FloatRange(0, 1), help='The minimum accepted sequence coverage for each gene segment', default=0.7, show_default=True)
 def start_cli(input_file: click.File, output_file: click.File, **kwargs):
     run(input_file, output_file, **kwargs)

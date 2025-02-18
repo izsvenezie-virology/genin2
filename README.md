@@ -147,7 +147,4 @@ Until the publication please cite the GitHub repository:
 
 ## Fundings
 
-This work was supported by KAPPA-FLU HORIZON-CL6-2022-FARM2FORK-02-03 (grant agreement No 101084171) and by the NextGeneration EU-MUR PNRR Extended Partnership initiative on Emerging Infectious Diseases (Project no. PE00000007, INF-ACT).
-
->Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Health and Digital Executive Agency (HEDEA). 
->Neither the European Union nor the granting authority can be held responsible for them
+This work was supported by the NextGeneration EU-MUR PNRR Extended Partnership initiative on Emerging Infectious Diseases (Project no. PE00000007, INF-ACT) and by Kappa-Flu project - Funded by the European Union under Grant Agreement (101084171). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or REA. Neither the European Union nor the granting authority can be held responsible for them.
