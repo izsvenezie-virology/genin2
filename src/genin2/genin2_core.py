@@ -1,31 +1,31 @@
 import importlib_resources, joblib, itertools, sys, csv, logging, time
 from Bio.Align import PairwiseAligner
 from typing import List, Tuple, Optional
+import genin2.update_checker as update_checker
 
 
-__version__ = '2.0.2'
+__version__ = '2.0.3'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
 MIN_SEQ_COV = 0.7 # Minimum fraction of valid input NTs wrt the total length of the ref seq
 MIN_VPROB_THR = 0.4 # Minimum probability for keeping a version prediction (as low confidence)
 VPROB_THR = 0.7 # Minimum probability for accepting a version prediction (as good confidence)
-MAX_COMPATIBLE_GENS = 3 # Maximum number of compatible genotypes to accept. If the prediction returns more, they will be discarded as unreliable
+MAX_COMPATIBLE_GENS = 3 # Maximum number of compatible genotypes to accept. If the prediction returns more, all will be discarded as unreliable
 
 alignment_refs: dict[str, str] = {}
 genotype2versions: dict[str, dict[str, str]] = {}
 models: dict[str, any]
 output_segments_order = ['PB2', 'PB1', 'PA', 'NP', 'NA', 'MP', 'NS']
-logger = logging.getLogger(__name__)
 
 
 def critical_error(msg: str, ex: Optional[Exception] = None) -> None:
     if ex is not None:
-        logger.critical('%s (%s, %s)', msg, type(ex).__name__, str(ex))
+        logging.critical('%s (%s, %s)', msg, type(ex).__name__, str(ex))
     else:
-        logger.critical(msg)
-    logger.critical("The above error was critical and the program will now exit")
-    logger.critical("If this problem persists and you need assistance, open an issue at https://github.com/izsvenezie-virology/genin2/issues")
+        logging.critical(msg)
+    logging.critical("The above error was critical and the program will now exit")
+    logging.critical("If this problem persists and you need assistance, open an issue at https://github.com/izsvenezie-virology/genin2/issues")
     sys.exit(-1)
 
 
@@ -114,12 +114,12 @@ def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, float]:
         encoded_seq = pairwise_alignment(alignment_refs[seg_name], seq)
         encoded_seq = encode_sequence(encoded_seq)
     except Exception as e:
-        logger.error(f"Failed to align and encode {seg_name} sequence. {type(e).__name__}, {str(e)}")
+        logging.error(f"Failed to align and encode {seg_name} sequence. {type(e).__name__}, {str(e)}")
         return ('?', 0.0)
 
     model = models[seg_name]
     v_probs = model.predict_proba([encoded_seq])[0]
-    logger.debug(seg_name + ': ' + '\t'.join(f'{c}:{v:.2f}' for c, v in zip(model.classes_, v_probs) if v > 0.1))
+    logging.debug(seg_name + ':\t' + '\t'.join(f'{c}/{v:.2f}' for c, v in zip(model.classes_, v_probs) if v > 0.1))
 
     max_p, max_v = 0, '?'
     for c, p in zip(model.classes_, v_probs):
@@ -201,50 +201,43 @@ def preload_samples(file):
         try:
             name, seg_name = name.rsplit('_', 1)
         except:
-            logger.error("Discarding sequence, invalid FASTA header: %s", name)
+            logging.error("Discarding sequence, invalid FASTA header: %s", name)
             continue
         
         if seg_name not in alignment_refs.keys():
             if seg_name != 'HA' and seg_name != 'MP':
-                logger.warning("Segment '%s' in sample '%s' is not recognized", seg_name, name)
+                logging.warning("Segment '%s' in sample '%s' is not recognized", seg_name, name)
             continue
         
         if name not in samples:
             samples[name] = {}
 
         if seg_name in samples[name]:
-            logger.warning("Segment %s for sample %s was defined multiple times (keeping the last)", seg_name, name)
+            logging.warning("Segment %s for sample %s was defined multiple times (keeping the last)", seg_name, name)
         samples[name][seg_name] = seq
     
     return samples
 
 
-# def check_update():
-#     try:
-#         import requests, tempfile
-#         from pathlib import Path
-
-#         check_interval_d = 5
-#         tmp_file = Path(tempfile.gettempdir()).joinpath('genin2_tmp')
-
-#         if not tmp_file.exists():
-#             tmp_file.touch()
-
-#         last_check_delta_d = (time.time() - tmp_file.stat().st_mtime) // 24 // 60 // 60
-#         logger.info("Last checked for updates %d days ago", last_check_delta_d)
-
-#         if last_check_delta_d > check_interval_d:
-#             logger.info("Checking for updates...")
-#             tmp_file.touch()
-
-#             res = requests.get(f'https://pypi.org/pypi/genin2/json', timeout=4)
-#             latest_version = res.json()['info']['version']
-#             logger.info("Latest version on PyPi: %s, current version: %s", latest_version, __version__)
-            
-#             global new_version_available
-#             new_version_available = (latest_version == __version__)
-#     except Exception as e:
-#         logger.warning("Could not check for updates. %s: %s", type(e).__name__, str(e))
+def prediction_to_tsv(sample_name, genotype, genotype_notes, ver_predictions):
+    tsv_row, notes_col = [], []
+    if genotype_notes is not None:
+        notes_col.append(f'Genotype: {genotype_notes}')
+    
+    tsv_row = [sample_name, genotype]
+    for seg in output_segments_order:
+        if seg == 'MP':
+            tsv_row.append('20')
+        else:
+            ver, ver_notes = ver_predictions[seg]
+            if ver_notes is not None:
+                notes_col.append(f'{seg}: {ver_notes}')
+                if ver_notes.startswith('low confidence'):
+                    ver = ver + '*'
+            tsv_row.append(ver or '?')
+    
+    tsv_row.append('; '.join(notes_col))
+    return tsv_row
 
 
 def run(in_file: str, out_file: str, **kwargs):
@@ -254,6 +247,7 @@ def run(in_file: str, out_file: str, **kwargs):
         stream=sys.stderr
     )
     logging.info("Initializing")
+    update_checker.start_check()
     init_data()
 
     if 'min_seq_cov' in kwargs:
@@ -275,28 +269,38 @@ def run(in_file: str, out_file: str, **kwargs):
     tot_seqs = 0
     for sample_name, sample in samples.items():
         logging.info(f"Processing {len(sample)} segments for {sample_name}")
-        (genotype, genotype_notes), ver_predictions = predict_sample(sample)
         tot_seqs += len(sample)
 
-        notes_col = []
-        if genotype_notes is not None:
-            notes_col.append(f'Genotype: {genotype_notes}')
-        
-        tsv_row = [sample_name, genotype]
-        for seg in output_segments_order:
-            if seg == 'MP':
-                tsv_row.append('20')
-            else:
-                ver, ver_notes = ver_predictions[seg]
-                if ver_notes is not None:
-                    notes_col.append(f'{seg}: {ver_notes}')
-                    if ver_notes.startswith('low confidence'):
-                        ver = ver + '*'
-                tsv_row.append(ver or '?')
-        
-        tsv_row.append('; '.join(notes_col))
+        (genotype, genotype_notes), ver_predictions = predict_sample(sample)
+        tsv_row = prediction_to_tsv(sample_name, genotype, genotype_notes, ver_predictions)
         out_file.write('\t'.join(tsv_row) + '\n')
 
     tot_time_s = time.time() - start_time
     h, m, s = (tot_time_s // 3600, tot_time_s % 3600 // 60, tot_time_s % 3600 % 60)
-    logger.info(f"Processed {len(samples)} samples ({tot_seqs} sequences) in {h:.0f}h {m:.0f}m {s:.1f}s")
+    logging.info(f"Processed {len(samples)} samples ({tot_seqs} sequences) in {h:.0f}h {m:.0f}m {s:.1f}s")
+
+    latest_version = update_checker.get_result()
+    if latest_version is not None and str(latest_version) != str(__version__):
+        sys.stderr.writelines(f'''
+  ╭───────────┬─────────────────────────┬───────────╮
+  │           │  NEW VERSION AVAILABLE  │           │
+  │           ╰─────────────────────────╯           │
+  │                                                 │
+  │  A new version of Genin2 has been released. To  │
+  │  update your current installation, run:         │
+  │    ╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶    │
+  │          pip install --upgrade genin2           │
+  │    ╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶╶    │
+  │                                                 │
+  │  To learn what's new (features and genotypes),  │
+  │  please refer to the "CHANGELOG.md" file at:    │
+  │                                                 │
+  │  https://github.com/izsvenezie-virology/genin2  │
+  │                                                 │
+  │  Additional details:                            │
+  │    • Installed version => v{__version__:17s}    │
+  │    • Latest release => v{latest_version:20s}    │
+  │                                                 │
+  ╰─────────────────────────────────────────────────╯
+
+''')

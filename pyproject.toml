@@ -10,6 +10,7 @@ authors = [
 ]
 description = "Genin2 is a lightining-fast bioinformatic tool to predict genotypes for H5 viruses belonging to the European clade 2.3.4.4b"
 keywords = ["avian-influenza", "genotype-inspector", "genotype-predictor"]
+license = {text = "AGPLv3+"}
 dynamic = ["version"]
 requires-python = ">=3.9"
 classifiers = [
@@ -26,16 +27,13 @@ dependencies = [
     "importlib-resources == 6.5.2",
     "numpy == 2.2.2",
     "joblib == 1.4.2",
-    "scikit-learn == 1.6.1"
+    "scikit-learn == 1.6.1",
+    "requests == 2.32.3"
 ]
 
 [project.readme]
 file = "README.md"
 content-type = "text/markdown"
-
-[project.license]
-file = "LICENSE"
-content-type = "text/plain"
 
 [project.urls]
 "Homepage" = "https://github.com/izsvenezie-virology/genin2"
