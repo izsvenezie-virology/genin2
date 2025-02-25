@@ -224,7 +224,7 @@ def prediction_to_tsv(sample_name, genotype, genotype_notes, ver_predictions):
     if genotype_notes is not None:
         notes_col.append(f'Genotype: {genotype_notes}')
     
-    tsv_row = [sample_name, genotype]
+    tsv_row = [sample_name, genotype, '']
     for seg in output_segments_order:
         if seg == 'MP':
             tsv_row.append('20')
@@ -255,7 +255,7 @@ def run(in_file: str, out_file: str, **kwargs):
         MIN_SEQ_COV = kwargs['min_seq_cov']
 
     try:
-        out_file.write('Sample Name\tGenotype\t' + '\t'.join(output_segments_order) + '\tNotes\n')
+        out_file.write('Sample Name\tGenotype\tSub-genotype\t' + '\t'.join(output_segments_order) + '\tNotes\n')
     except Exception as e:
         critical_error(f"Couldn't write to output file '{out_file}'", e)
 
