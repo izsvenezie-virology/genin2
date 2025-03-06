@@ -2,6 +2,8 @@
 
 Genin2 is a lightining-fast bioinformatic tool to predict genotypes for clade 2.3.4.4b H5Nx viruses collected in Europe since October 2020. Genotypes are assigned using the methods described in [this article](https://doi.org/10.1093/ve/veae027). Genin2 identifies only epidemiologically relevant European genotypes, i.e., detected in at least 3 viruses collected from at least 2 countries. You can inspect the up-to-date list of supported genotypes in [this file](src/genin2/compositions.tsv).
 
+Note that, as of version 2.1.0, Genin2 is also cabable of distinguishing the `DI`, `DI.1`, and `DI.2` subgenotypes.
+
 ## Table of contents:
 
 - [Features](#features)
@@ -29,7 +31,7 @@ Genin2 is a lightining-fast bioinformatic tool to predict genotypes for clade 2.
 pip install genin2
 ```
 
-To update the program and include any new genotype that might have been added, run:
+To **update** the program and include any new genotype that might have been added, run:
 
 ```sh
 pip install --upgrade genin2
@@ -71,7 +73,11 @@ The results table consists of 10 columns:
 
   The assigned genotype. Note that a value is only written here when it is certain; in all other cases the genotype is set as `[unassigned]` and the *Notes* column will provide additional information (see below).
 
-- **Columns 3 to 9**: PB2, PB1, PA, NP, NA MP, NS
+- **Column 3**: Sub-genotype
+
+  For genotypes where sub-clustering is important, as is `EA-2024-DI`, subgenotype names such as `DI`, `DI.1`, and `DI.2` will be specified in this column.
+
+- **Columns 4 to 10**: PB2, PB1, PA, NP, NA MP, NS
 
   The version that each segment is classified as.
   - If the confidence of the prediction is below a safety threshold, an asterisk (`*`) is appended to the number.
@@ -79,7 +85,7 @@ The results table consists of 10 columns:
   - Note: HA is ignored, as all samples are assumend to bellong to the 2.3.4.4b H5 clade.
   - Note: MP is always assumed to be version "20", as it is the only version present in Genin2's genotypes list.
 
-- **Column 10**: Notes
+- **Column 11**: Notes
 
   Details on failed or discarded predictions and assigments. This column contains information about these events:
   - Genotypes might be `[unassigned]` because of an unknown composition (*"unknown composition"*), or because accepted versions are too few and the composition matches more than a single genotype (*"insufficient data"*). In the latter case however, if the set of matches is small they are listed as "*compatible with*".
@@ -99,7 +105,7 @@ The results table consists of 10 columns:
 ### *Q: Which genotypes are recognized by Genin2?*
 #### Answer:
 
-Genin2's prediction models are regularely updated to include relevant new genotypes. You can inspect the table on which predictions are based upon by opening the file [src/genin2/compositions.tsv](src/genin2/compositions.tsv). Generally speaking, we aim to support all epidemiologically relevant European genotypes, i.e., those observed in at least 3 occurences in at least 2 different coutnries.
+Genin2's prediction models are regularely updated to include relevant new genotypes. You can inspect the table on which predictions are based upon by opening the file [src/genin2/compositions.tsv](src/genin2/compositions.tsv). Generally speaking, we aim to support all epidemiologically relevant European genotypes, i.e., those observed in at least 3 occurences in at least 2 different countries. Additionally, as of version 2.1.0, subgenotypes of `EA-2024-DI` are also supported.
 
 ### *Q: What does "low quality" mean when a sequence is flagged as discarded?*
 #### Answer:
