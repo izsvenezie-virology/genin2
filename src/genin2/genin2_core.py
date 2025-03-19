@@ -1,3 +1,4 @@
+from click import File
 import importlib_resources, joblib, sys, csv, logging, time
 from typing import List, Tuple, Optional
 import genin2.update_checker as update_checker
@@ -21,16 +22,26 @@ di_discr = DIDiscriminator()
 
 
 def critical_error(msg: str, ex: Optional[Exception] = None) -> None:
+    '''
+    Log a critical error message and exit the program, optionally printing information about an exception
+
+    Args:
+        msg (str): The error message
+        ex (Optional[Exception]): The exception to log. Defaults to None.
+    '''
     if ex is not None:
         logging.critical('%s (%s, %s)', msg, type(ex).__name__, str(ex))
     else:
         logging.critical(msg)
     logging.critical("The above error was critical and the program will now exit")
-    logging.critical("If this problem persists and you need assistance, open an issue at https://github.com/izsvenezie-virology/genin2/issues")
+    logging.critical("If you need assistance, you can open an issue at https://github.com/izsvenezie-virology/genin2/issues")
     sys.exit(-1)
 
 
 def init_data() -> None:
+    '''
+    Load the compositions table and the prediction models. If an error occurs, a critical error is raised.
+    '''
     global genotype2versions, models
 
     try:
@@ -116,7 +127,7 @@ def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, float]:
 
 def get_compatible_genotypes(versions: dict[str, str]) -> List[str]:
     '''
-    Get all compatible genotypes based on the provided versions
+    Get all compatible genotypes based on the provided versions. If no genotypes are compatible, an empty list is returned.
 
     Args:
         versions (dict[str, str]): A dict mapping each segment to the most likely version. '?' is trated as an unknown version.
@@ -133,7 +144,17 @@ def get_compatible_genotypes(versions: dict[str, str]) -> List[str]:
     return list(gset.keys())
 
 
-def preload_samples(file):
+def preload_samples(file: File) -> dict[str, dict[str, str]]:
+    '''
+    Load all samples contained in a FASTA file into a dictionary. The keys are the sample names and the values are dictionaries
+    mapping each segment to the corresponding sequence.
+
+    Args:
+        file (File): A file handle of a FASTA file
+
+    Returns:
+        dict[str, dict[str, str]]: A dictionary mapping each sample name to a dictionary of segments and sequences
+    '''
     samples = {}
 
     for name, seq in read_fasta(file):
@@ -165,21 +186,18 @@ def prediction_to_tsv(sample_name, genotype, subgenotype, genotype_notes, ver_pr
     
     tsv_row = [sample_name, genotype, subgenotype or '']
     for seg in output_segments_order:
-        if seg == 'MP':
-            tsv_row.append('20')
-        else:
-            ver, ver_notes = ver_predictions[seg]
-            if ver_notes is not None:
-                notes_col.append(f'{seg}: {ver_notes}')
-                if ver_notes.startswith('low confidence'):
-                    ver = ver + '*'
-            tsv_row.append(ver or '?')
+        ver, ver_notes = ver_predictions[seg]
+        if ver_notes is not None:
+            notes_col.append(f'{seg}: {ver_notes}')
+            if ver_notes.startswith('low confidence'):
+                ver = ver + '*'
+        tsv_row.append(ver or '?')
     
     tsv_row.append('; '.join(notes_col))
     return tsv_row
 
 
-def run(in_file: str, out_file: str, **kwargs):
+def run(in_file: File, out_file: File, **kwargs):
     logging.basicConfig(
         level={'dbg': logging.DEBUG, 'inf': logging.INFO, 'wrn': logging.WARN, 'err': logging.ERROR}[kwargs['loglevel']],
         format='[%(levelname)s] %(message)s',
