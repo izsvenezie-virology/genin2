@@ -6,4 +6,5 @@ url: "https://izsvenezie-virology.github.io"
 
 plugins:
   - jekyll-sitemap
+  - jemoji
 

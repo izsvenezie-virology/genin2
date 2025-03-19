@@ -1,6 +1,7 @@
 ---
 layout: home
-title: Genin2 documentation
+title: Home
+nav_order: 1
 ---
 
 # Genin2
@@ -10,7 +11,7 @@ Genin2 is a lightining-fast bioinformatic tool to predict genotypes for clade 2.
 ## Table of contents:
 
 - [Features](#features)
-- [Installation](#installation)
+- [Installation](./install)
 - [Usage](#usage)
   - [Input guidelines](#input-guidelines)
   - [Output format and interpretation](#output-format-and-interpretation)
@@ -26,19 +27,6 @@ Genin2 is a lightining-fast bioinformatic tool to predict genotypes for clade 2.
 - :cherry_blossom: **Easy on the resources**: genin2 can be run on any laptop; 1 CPU and 200 MB of RAM is all it takes
 - :zap: **Lightning-fast**: on a single 2.30 GHz core, Genin2 can process more than 1'200 sequences per minute
 
-## Installation
-
-**Genin2** is compatible with Windows, Linux, and macOS. Before proceeding, please ensure you have already installed [Python](https://www.python.org/downloads/) and [Pip](https://pypi.org/project/pip/) (the latter is usually already included with the Python installation). Then, open a terminal and run:
-
-```sh
-pip install genin2
-```
-
-To update the program and include any new genotype that might have been added, run:
-
-```sh
-pip install --upgrade genin2
-```
 
 ## Usage
 
