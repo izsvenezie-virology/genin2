@@ -1,0 +1,9 @@
+title: Genin2 Documentation
+description: Documentation site for the Genin2 AIV genotyping tool
+theme: just-the-docs
+
+url: "https://izsvenezie-virology.github.io"
+
+plugins:
+  - jekyll-sitemap
+
