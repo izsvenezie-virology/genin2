@@ -29,9 +29,18 @@ pip install --upgrade genin2
 
 ## Method 2: Conda/Bioconda
 
-Genin2 is also available on the [Bioconda](https://bioconda.github.io/recipes/genin2/README.html) channel
-Ensure you have [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (or [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)) installed and run:
+Genin2 is also available on the [Bioconda](https://bioconda.github.io/recipes/genin2/README.html) channel. Ensure you have [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) (or [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)) installed and run:
 
 ```sh
 conda install -c bioconda genin2
 ```
+
+# Test your installation
+
+To check if Genin2 was installed correctly, run:
+
+```sh
+genin2 --version
+```
+
+It should print version information and exit cleanly.
