@@ -1,9 +1,11 @@
 # Genin2 changelog
 
-## Version 2.1.0, 19/03/2025
+## Version 2.1.0, 01/04/2025
 
+- Add genotype: **EA-2024-EF**
 - Add `Subgenotype` column to output data
 - Add `DI`, `DI.1`, and `DI.2` to the recognized sub-genotypes
+- Removed confidence values as they were too little correlated and therefore misleading
 
 ## Version 2.0.3, 20/02/2025
 
