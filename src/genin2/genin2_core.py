@@ -4,7 +4,7 @@ from typing import List, Tuple, Optional
 import genin2.update_checker as update_checker
 
 
-__version__ = '2.0.3'
+__version__ = '2.0.4'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
@@ -70,9 +70,13 @@ def init_data() -> None:
 
 def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, Tuple[str, str]]]:
     ver_predictions: dict[str, Tuple[str, str]] = {}
+    ver_predictions['MP'] = ('20', None)
     low_confidence = False
 
     for seg_name, seq in sample.items():
+        if seg_name == 'MP':
+            continue
+        
         seq_cov = (len(seq) - seq.upper().count('N')) / len(alignment_refs[seg_name])
         if (seq_cov < MIN_SEQ_COV):
             ver_predictions[seg_name] = ('?', f'low quality ({int(seq_cov*100)}% valid)')
@@ -104,9 +108,6 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, Tuple[str, st
 
 
 def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, float]:
-    if seg_name == 'MP':
-        return ('20', None)
-    
     try:
         encoded_seq = pairwise_alignment(alignment_refs[seg_name], seq)
         encoded_seq = encode_sequence(encoded_seq)
