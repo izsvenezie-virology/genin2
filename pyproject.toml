@@ -51,7 +51,7 @@ where = ["src"]
 namespaces = true
 
 [tool.setuptools.package-data]
-genin2 = ["models.xz", "compositions.tsv"]
+genin2 = ["dd.xz", "models.xz", "compositions.tsv"]
 
 [tool.setuptools.dynamic]
 version = {attr = "genin2.genin2_core.__version__"}
