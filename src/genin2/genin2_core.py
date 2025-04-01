@@ -6,7 +6,7 @@ from genin2.di_discriminator import DIDiscriminator
 from genin2.utils import alignment_refs, read_fasta, pairwise_alignment, encode_sequence
 
 
-__version__ = '2.1.0'
+__version__ = '2.1.1'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
