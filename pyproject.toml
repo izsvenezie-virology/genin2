@@ -36,7 +36,7 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.urls]
-"Homepage" = "https://github.com/izsvenezie-virology/genin2"
+"Homepage" = "https://izsvenezie-virology.github.io/genin2"
 "Bug Tracker" = "https://github.com/izsvenezie-virology/genin2/issues"
 
 [project.scripts]
