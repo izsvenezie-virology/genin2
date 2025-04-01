@@ -9,6 +9,9 @@ nav_order: 1
 
 Genin2 is a lightining-fast bioinformatic tool to predict genotypes for clade 2.3.4.4b H5Nx viruses collected in Europe since October 2020. Genotypes are assigned using the methods described in [this article](https://doi.org/10.1093/ve/veae027). Genin2 identifies only epidemiologically relevant European genotypes, i.e., detected in at least 3 viruses collected from at least 2 countries. You can inspect the up-to-date list of supported genotypes in [this file](https://github.com/izsvenezie-virology/genin2/blob/master/src/genin2/compositions.tsv).
 
+Note that, as of version 2.1.0, Genin2 is also cabable of distinguishing the `DI`, `DI.1`, and `DI.2` subgenotypes.
+
+
 ## Table of contents:
 
 - [Features](#features)
