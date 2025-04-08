@@ -1,5 +1,9 @@
 # Genin2 changelog
 
+## Version 2.1.2, 08/04/2025
+
+- Add genotype: **EA-2025-EG**
+
 ## Version 2.1.0, 01/04/2025
 
 - Add genotype: **EA-2024-EF**

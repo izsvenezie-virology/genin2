@@ -10,6 +10,7 @@ SubgenotypePrediction = namedtuple('SubgenotypePrediction', ['subgenotype', 'con
 class DIDiscriminator:
     def __init__(self):
         self.dd_models = joblib.load(importlib_resources.files('genin2').joinpath('dd.xz'))
+        self.model_build_date = self.dd_models['build_date']
     
     def predict_sample(self, sample):
         segments_pred = {sn: self._predict_segment(sn, nt) for sn, nt in sample.items()}

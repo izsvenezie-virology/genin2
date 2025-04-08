@@ -6,7 +6,7 @@ from genin2.di_discriminator import DIDiscriminator
 from genin2.utils import alignment_refs, read_fasta, pairwise_alignment, encode_sequence
 
 
-__version__ = '2.1.1'
+__version__ = '2.1.2'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
@@ -16,7 +16,7 @@ MAX_COMPATIBLE_GENS = 3 # Maximum number of compatible genotypes to accept. If t
 genotype2versions: dict[str, dict[str, str]] = {}
 models: dict[str, any]
 output_segments_order = ['PB2', 'PB1', 'PA', 'NP', 'NA', 'MP', 'NS']
-di_discr = DIDiscriminator()
+di_discr: DIDiscriminator = None
 
 
 def critical_error(msg: str, ex: Optional[Exception] = None) -> None:
@@ -40,7 +40,7 @@ def init_data() -> None:
     '''
     Load the compositions table and the prediction models. If an error occurs, a critical error is raised.
     '''
-    global genotype2versions, models
+    global genotype2versions, models, di_discr
 
     try:
         comp_file = csv.reader(
@@ -58,8 +58,15 @@ def init_data() -> None:
         models = joblib.load(
             importlib_resources.files('genin2').joinpath('models.xz')
         )
+        logging.debug(f'Model build date: {models["build_date"]}')
     except Exception as e:
         critical_error("Couldn't load prediction models", e)
+
+    try:
+        di_discr = DIDiscriminator()
+        logging.debug(f'DI discriminator models build date: {di_discr.model_build_date}')
+    except Exception as e:
+        critical_error("Couldn't load DI discriminator models", e)
 
 
 def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, Tuple[str, str]]]:
