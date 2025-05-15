@@ -291,7 +291,6 @@ PLATFORMS
 
 DEPENDENCIES
   github-pages (~> 232)
-  jekyll-sitemap
   just-the-docs (= 0.8.2)
 
 BUNDLED WITH

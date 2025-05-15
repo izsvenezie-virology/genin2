@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.2"]
+requires = ["setuptools>=69.5"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -10,7 +10,6 @@ authors = [
 ]
 description = "Genin2 is a lightining-fast bioinformatic tool to predict genotypes for H5 viruses belonging to the European clade 2.3.4.4b"
 keywords = ["avian-influenza", "genotype-inspector", "genotype-predictor"]
-license = {text = "AGPLv3+"}
 dynamic = ["version"]
 requires-python = ">=3.9"
 classifiers = [
@@ -18,8 +17,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Environment :: Console",
     "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Bio-Informatics",
-    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)"
+    "Topic :: Scientific/Engineering :: Bio-Informatics"
 ]
 dependencies = [
     "biopython >= 1.85",
@@ -36,7 +34,7 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.urls]
-"Homepage" = "https://github.com/izsvenezie-virology/genin2"
+"Homepage" = "https://izsvenezie-virology.github.io/genin2"
 "Bug Tracker" = "https://github.com/izsvenezie-virology/genin2/issues"
 
 [project.scripts]
