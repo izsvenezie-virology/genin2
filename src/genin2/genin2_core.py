@@ -3,7 +3,8 @@ import importlib_resources, joblib, sys, csv, logging, time
 from typing import List, Tuple, Optional
 import genin2.update_checker as update_checker
 from genin2.di_discriminator import DIDiscriminator
-from genin2.utils import alignment_refs, read_fasta, pairwise_alignment, encode_sequence
+from genin2.utils import alignment_refs, read_fasta, pairwise_alignment, encode_sequence, \
+    InvalidEncoding
 
 
 __version__ = '2.1.2'
@@ -108,12 +109,15 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, Tuple[str, st
     return genotype, ver_predictions
 
 
-def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, float]:
+def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, str|None]:
     try:
         encoded_seq = pairwise_alignment(alignment_refs[seg_name], seq)
         encoded_seq = encode_sequence(encoded_seq)
-    except Exception as e:
-        logging.error(f"Failed to align and encode {seg_name} sequence. {type(e).__name__}, {str(e)}")
+    except InvalidEncoding as ex:
+        logging.error(f"Failed to encode {seg_name}. {str(ex)}")
+        return ('?', 'nucleotide encoding error')
+    except Exception as ex:
+        logging.error(f"Failed to align and encode {seg_name} sequence. {type(ex).__name__}, {str(ex)}")
         return ('?', 'model error')
 
     model = models[seg_name]

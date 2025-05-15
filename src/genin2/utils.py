@@ -64,4 +64,12 @@ def encode_sequence(seq: str) -> List[bool]:
         'S': [F, T, T, F], 'M': [T, T, F, F], 'K': [F, F, T, T], 'R': [T, F, T, F], 'Y': [F, T, F, T], 'B': [F, T, T, T],
         'D': [T, F, T, T], 'H': [T, T, F, T], 'V': [T, T, T, F], 'N': [T, T, T, T], 'Z': [F, F, F, F], '-': [F, F, F, F]
     }
-    return list(itertools.chain(*[encoding_dict[base] for base in seq]))
+
+    try:
+        return list(itertools.chain(*[encoding_dict[base] for base in seq]))
+    except KeyError as ex:
+        raise InvalidEncoding(f"Invalid nucleotide found: '{ex.args[0]}' is an unknown IUPAC degeneration")
+
+
+class InvalidEncoding(Exception):
+    pass
