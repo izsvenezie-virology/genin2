@@ -45,7 +45,7 @@ def init_data() -> None:
 
     try:
         comp_file = csv.reader(
-            open(importlib_resources.files('genin2').joinpath('compositions.tsv'), 'r'),
+            importlib_resources.files('genin2').joinpath('compositions.tsv').open('r'),
             delimiter='\t'
         )
         cols = next(comp_file)
@@ -72,13 +72,9 @@ def init_data() -> None:
 
 def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, Tuple[str, str]]]:
     ver_predictions: dict[str, Tuple[str, str]] = {}
-    ver_predictions['MP'] = ('20', None)
     low_confidence = False
 
-    for seg_name, seq in sample.items():
-        if seg_name == 'MP':
-            continue
-        
+    for seg_name, seq in sample.items():        
         seq_cov = (len(seq) - seq.upper().count('N')) / len(alignment_refs[seg_name])
         if (seq_cov < MIN_SEQ_COV):
             ver_predictions[seg_name] = ('?', f'low quality ({int(seq_cov*100)}% valid)')
@@ -86,6 +82,7 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, Tuple[str, st
             continue
         
         v, n = predict_seg_version(seg_name, seq)
+        logging.debug(f"{seg_name:3s} -> ({v}, {n})")
         ver_predictions[seg_name] = (v, n)
         if n is not None:
             low_confidence = True
@@ -122,6 +119,13 @@ def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, str|None]:
 
     model = models[seg_name]
     prediction = model.predict([encoded_seq])[0]
+    if logging.root.level <= logging.DEBUG:
+        classes = ' '.join(f'{c:>6s}' for c in model.classes_)
+        logging.debug(f"{seg_name:3s} df: {classes}")
+        df = model.decision_function([encoded_seq])[0]
+        df = [df] if isinstance(df, float) else df
+        df = ','.join(f'{v:6.2f}' for v in df)
+        logging.debug(f"{seg_name:3s}     {df}")
     return (prediction, None if prediction != '?' else 'unassigned')
 
 
@@ -196,6 +200,7 @@ def prediction_to_tsv(sample_name, genotype, subgenotype, genotype_notes, ver_pr
 
 
 def run(in_file: File, out_file: File, **kwargs):
+    # fmt_log = lambda lvl, msg: f"[{lvl}] {msg}"
     logging.basicConfig(
         level={'dbg': logging.DEBUG, 'inf': logging.INFO, 'wrn': logging.WARN, 'err': logging.ERROR}[kwargs['loglevel']],
         format='[%(levelname)s] %(message)s',
