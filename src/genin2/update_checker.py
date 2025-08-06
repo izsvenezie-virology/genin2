@@ -3,7 +3,7 @@ import requests, tempfile, time, logging
 from pathlib import Path
 
 
-_thr = None
+_thr: Thread | None = None
 latest_version = None
 
 
@@ -11,7 +11,7 @@ def thr_target():
     global latest_version
 
     try:
-        check_interval_d = 5
+        check_interval_d = 3
         tmp_file = Path(tempfile.gettempdir()).joinpath('genin2_tmp')
 
         if tmp_file.exists():
@@ -39,5 +39,9 @@ def start_check():
 
 
 def get_result():
+    if _thr is None:
+        logging.error("The checker thread has never been started.")
+        raise Exception("The checker thread has never been started.")
+    
     _thr.join()
     return latest_version
