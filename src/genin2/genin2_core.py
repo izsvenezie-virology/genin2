@@ -1,13 +1,13 @@
 from click import File
 import importlib_resources, joblib, sys, csv, logging, time
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Any
 import genin2.update_checker as update_checker
 from genin2.di_discriminator import DIDiscriminator
 from genin2.utils import alignment_refs, read_fasta, pairwise_alignment, encode_sequence, \
     InvalidEncoding
 
 
-__version__ = '2.1.3'
+__version__ = '2.1.4-beta'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
@@ -15,9 +15,9 @@ MIN_SEQ_COV = 0.7 # Minimum fraction of valid input NTs wrt the total length of 
 MAX_COMPATIBLE_GENS = 3 # Maximum number of compatible genotypes to accept. If the prediction returns more, all will be discarded as unreliable
 
 genotype2versions: dict[str, dict[str, str]] = {}
-models: dict[str, any]
+models: dict[str, Any]
 output_segments_order = ['PB2', 'PB1', 'PA', 'NP', 'NA', 'MP', 'NS']
-di_discr: DIDiscriminator = None
+di_discr: DIDiscriminator
 
 
 def critical_error(msg: str, ex: Optional[Exception] = None) -> None:
@@ -35,6 +35,23 @@ def critical_error(msg: str, ex: Optional[Exception] = None) -> None:
     logging.critical("The above error was critical and the program will now exit")
     logging.critical("If you need assistance, you can open an issue at https://github.com/izsvenezie-virology/genin2/issues")
     sys.exit(-1)
+
+
+def print_model_info() -> None:
+    import numpy, sklearn, Bio
+    init_data()
+    print(f"Genin2 core ... {__version__}")
+    print(f"Genotypes ..... {len(genotype2versions.keys())} entries")
+    print(f"Models/1 ...... {models['build_date']}")
+    for k, v in models.items():
+        if k != 'build_date':
+            print(f" {k:>3s} .......... {len(v.classes_)} classes")
+    print(f"Models/2 ...... {di_discr.model_build_date}")
+    print()
+    print(f"NumPy ......... {numpy.__version__}")
+    print(f"SKLearn ....... {sklearn.__version__}")
+    print(f"Joblib ........ {joblib.__version__}")
+    print(f"Biopython ..... {Bio.__version__}")
 
 
 def init_data() -> None:
