@@ -7,7 +7,7 @@ from genin2.utils import alignment_refs, read_fasta, pairwise_alignment, encode_
     InvalidEncoding
 
 
-__version__ = '2.1.4'
+__version__ = '2.1.5'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
