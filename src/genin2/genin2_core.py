@@ -1,12 +1,13 @@
 from click import File
 import importlib_resources, joblib, sys, csv, logging, time
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Any, NamedTuple
 import genin2.update_checker as update_checker
 from genin2.di_discriminator import DIDiscriminator
-from genin2.utils import alignment_refs, read_fasta, pairwise_alignment, encode_sequence
+from genin2.utils import alignment_refs, read_fasta, pairwise_alignment, encode_sequence, \
+    InvalidEncoding
 
 
-__version__ = '2.1.3'
+__version__ = '2.1.4'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
@@ -14,9 +15,11 @@ MIN_SEQ_COV = 0.7 # Minimum fraction of valid input NTs wrt the total length of 
 MAX_COMPATIBLE_GENS = 3 # Maximum number of compatible genotypes to accept. If the prediction returns more, all will be discarded as unreliable
 
 genotype2versions: dict[str, dict[str, str]] = {}
-models: dict[str, any]
+models: dict[str, Any]
 output_segments_order = ['PB2', 'PB1', 'PA', 'NP', 'NA', 'MP', 'NS']
-di_discr: DIDiscriminator = None
+di_discr: DIDiscriminator
+
+GenotypePrediction = NamedTuple('GenotypePrediction', [('GenotypeName', str), ('Warnings', Optional[str])])
 
 
 def critical_error(msg: str, ex: Optional[Exception] = None) -> None:
@@ -36,6 +39,23 @@ def critical_error(msg: str, ex: Optional[Exception] = None) -> None:
     sys.exit(-1)
 
 
+def print_model_info() -> None:
+    import numpy, sklearn, Bio
+    init_data()
+    print(f"Genin2 core ... {__version__}")
+    print(f"Genotypes ..... {len(genotype2versions.keys())} entries")
+    print(f"Models/1 ...... {models['build_date']}")
+    for k, v in models.items():
+        if k != 'build_date':
+            print(f" {k:>3s} .......... {len(v.classes_)} classes")
+    print(f"Models/2 ...... {di_discr.model_build_date}")
+    print()
+    print(f"NumPy ......... {numpy.__version__}")
+    print(f"SKLearn ....... {sklearn.__version__}")
+    print(f"Joblib ........ {joblib.__version__}")
+    print(f"Biopython ..... {Bio.__version__}")
+
+
 def init_data() -> None:
     '''
     Load the compositions table and the prediction models. If an error occurs, a critical error is raised.
@@ -44,7 +64,7 @@ def init_data() -> None:
 
     try:
         comp_file = csv.reader(
-            open(importlib_resources.files('genin2').joinpath('compositions.tsv'), 'r'),
+            importlib_resources.files('genin2').joinpath('compositions.tsv').open('r'),
             delimiter='\t'
         )
         cols = next(comp_file)
@@ -69,15 +89,11 @@ def init_data() -> None:
         critical_error("Couldn't load DI discriminator models", e)
 
 
-def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, Tuple[str, str]]]:
+def predict_sample(sample: dict[str, str]) -> Tuple[GenotypePrediction, dict[str, Tuple[str, str]]]:
     ver_predictions: dict[str, Tuple[str, str]] = {}
-    ver_predictions['MP'] = ('20', None)
     low_confidence = False
 
-    for seg_name, seq in sample.items():
-        if seg_name == 'MP':
-            continue
-        
+    for seg_name, seq in sample.items():        
         seq_cov = (len(seq) - seq.upper().count('N')) / len(alignment_refs[seg_name])
         if (seq_cov < MIN_SEQ_COV):
             ver_predictions[seg_name] = ('?', f'low quality ({int(seq_cov*100)}% valid)')
@@ -85,8 +101,9 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, Tuple[str, st
             continue
         
         v, n = predict_seg_version(seg_name, seq)
+        logging.debug(f"{seg_name:3s} -> ({v}, {n})")
         ver_predictions[seg_name] = (v, n)
-        if n is not None:
+        if n != '':
             low_confidence = True
     
     for seg_name in alignment_refs.keys():
@@ -94,31 +111,41 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, Tuple[str, st
             ver_predictions[seg_name] = ('?', 'missing')
             low_confidence = True
 
-    genotype = (None, None)
-    compatible = get_compatible_genotypes({s: (v if x is None else '?') for s, (v, x) in ver_predictions.items()})
-    if len(compatible) == 1 and not low_confidence:
-        genotype = (compatible[0], None)
-    elif len(compatible) == 0:
-        genotype = ('[unassigned]', 'unknown composition')
-    elif len(compatible) > MAX_COMPATIBLE_GENS:
-        genotype = ('[unassigned]', 'insufficient data')
+    genotype = GenotypePrediction('', None)
+    compatibles = get_compatible_genotypes({s: (v if x is None else '?') for s, (v, x) in ver_predictions.items()})
+    if len(compatibles) == 1 and not low_confidence:
+        genotype = GenotypePrediction(compatibles[0], None)
+    elif len(compatibles) == 0:
+        genotype = GenotypePrediction('[unassigned]', 'unknown composition')
+    elif len(compatibles) > MAX_COMPATIBLE_GENS:
+        genotype = GenotypePrediction('[unassigned]', 'insufficient data')
     else:
-        genotype = ('[unassigned]', f'compatible with {", ".join(compatible)}')
+        genotype = GenotypePrediction('[unassigned]', f'compatible with {", ".join(compatibles)}')
 
     return genotype, ver_predictions
 
 
-def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, float]:
+def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, str]:
     try:
         encoded_seq = pairwise_alignment(alignment_refs[seg_name], seq)
         encoded_seq = encode_sequence(encoded_seq)
-    except Exception as e:
-        logging.error(f"Failed to align and encode {seg_name} sequence. {type(e).__name__}, {str(e)}")
+    except InvalidEncoding as ex:
+        logging.error(f"Failed to encode {seg_name}. {str(ex)}")
+        return ('?', 'nucleotide encoding error')
+    except Exception as ex:
+        logging.error(f"Failed to align and encode {seg_name} sequence. {type(ex).__name__}, {str(ex)}")
         return ('?', 'model error')
 
     model = models[seg_name]
     prediction = model.predict([encoded_seq])[0]
-    return (prediction, None if prediction != '?' else 'unassigned')
+    if logging.root.level <= logging.DEBUG:
+        classes = ' '.join(f'{c:>6s}' for c in model.classes_)
+        logging.debug(f"{seg_name:3s} df: {classes}")
+        df = model.decision_function([encoded_seq])[0]
+        df = [df] if isinstance(df, float) else df
+        df = ','.join(f'{v:6.2f}' for v in df)
+        logging.debug(f"{seg_name:3s}     {df}")
+    return (prediction, '' if prediction != '?' else 'unassigned')
 
 
 def get_compatible_genotypes(versions: dict[str, str]) -> List[str]:
@@ -192,6 +219,7 @@ def prediction_to_tsv(sample_name, genotype, subgenotype, genotype_notes, ver_pr
 
 
 def run(in_file: File, out_file: File, **kwargs):
+    # fmt_log = lambda lvl, msg: f"[{lvl}] {msg}"
     logging.basicConfig(
         level={'dbg': logging.DEBUG, 'inf': logging.INFO, 'wrn': logging.WARN, 'err': logging.ERROR}[kwargs['loglevel']],
         format='[%(levelname)s] %(message)s',
