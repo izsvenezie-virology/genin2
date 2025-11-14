@@ -20,6 +20,7 @@ output_segments_order = ['PB2', 'PB1', 'PA', 'NP', 'NA', 'MP', 'NS']
 di_discr: DIDiscriminator
 
 GenotypePrediction = NamedTuple('GenotypePrediction', [('GenotypeName', str), ('Warnings', Optional[str])])
+SegmentPrediction = NamedTuple('SegmentPrediction', [('Version', str), ('Warnings', Optional[str])])
 
 
 def critical_error(msg: str, ex: Optional[Exception] = None) -> None:
@@ -89,30 +90,30 @@ def init_data() -> None:
         critical_error("Couldn't load DI discriminator models", e)
 
 
-def predict_sample(sample: dict[str, str]) -> Tuple[GenotypePrediction, dict[str, Tuple[str, str]]]:
-    ver_predictions: dict[str, Tuple[str, str]] = {}
+def predict_sample(sample: dict[str, str]) -> Tuple[GenotypePrediction, dict[str, SegmentPrediction]]:
+    ver_predictions: dict[str, SegmentPrediction] = {}
     low_confidence = False
 
     for seg_name, seq in sample.items():        
         seq_cov = (len(seq) - seq.upper().count('N')) / len(alignment_refs[seg_name])
         if (seq_cov < MIN_SEQ_COV):
-            ver_predictions[seg_name] = ('?', f'low quality ({int(seq_cov*100)}% valid)')
+            ver_predictions[seg_name] = SegmentPrediction('?', f'low quality ({int(seq_cov*100)}% valid)')
             low_confidence = True
             continue
         
-        v, n = predict_seg_version(seg_name, seq)
-        logging.debug(f"{seg_name:3s} -> ({v}, {n})")
-        ver_predictions[seg_name] = (v, n)
-        if n != '':
+        seg_pred = predict_seg_version(seg_name, seq)
+        logging.debug(f"{seg_name:3s} -> ({seg_pred.Version}, {seg_pred.Warnings})")
+        ver_predictions[seg_name] = seg_pred
+        if seg_pred.Warnings != '':
             low_confidence = True
     
     for seg_name in alignment_refs.keys():
         if seg_name not in ver_predictions:
-            ver_predictions[seg_name] = ('?', 'missing')
+            ver_predictions[seg_name] = SegmentPrediction('?', 'missing')
             low_confidence = True
 
-    genotype = GenotypePrediction('', None)
-    compatibles = get_compatible_genotypes({s: (v if x is None else '?') for s, (v, x) in ver_predictions.items()})
+    genotype = GenotypePrediction('', 'internal error')
+    compatibles = get_compatible_genotypes({s: (pred.Version if pred.Warnings == '' else '?') for s, pred in ver_predictions.items()})
     if len(compatibles) == 1 and not low_confidence:
         genotype = GenotypePrediction(compatibles[0], None)
     elif len(compatibles) == 0:
@@ -125,16 +126,16 @@ def predict_sample(sample: dict[str, str]) -> Tuple[GenotypePrediction, dict[str
     return genotype, ver_predictions
 
 
-def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, str]:
+def predict_seg_version(seg_name: str, seq: str) -> SegmentPrediction:
     try:
         encoded_seq = pairwise_alignment(alignment_refs[seg_name], seq)
         encoded_seq = encode_sequence(encoded_seq)
     except InvalidEncoding as ex:
         logging.error(f"Failed to encode {seg_name}. {str(ex)}")
-        return ('?', 'nucleotide encoding error')
+        return SegmentPrediction('?', 'nucleotide encoding error')
     except Exception as ex:
         logging.error(f"Failed to align and encode {seg_name} sequence. {type(ex).__name__}, {str(ex)}")
-        return ('?', 'model error')
+        return SegmentPrediction('?', 'model error')
 
     model = models[seg_name]
     prediction = model.predict([encoded_seq])[0]
@@ -145,7 +146,7 @@ def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, str]:
         df = [df] if isinstance(df, float) else df
         df = ','.join(f'{v:6.2f}' for v in df)
         logging.debug(f"{seg_name:3s}     {df}")
-    return (prediction, '' if prediction != '?' else 'unassigned')
+    return SegmentPrediction(prediction, '' if prediction != '?' else 'unassigned')
 
 
 def get_compatible_genotypes(versions: dict[str, str]) -> List[str]:
@@ -209,10 +210,10 @@ def prediction_to_tsv(sample_name, genotype, subgenotype, genotype_notes, ver_pr
     
     tsv_row = [sample_name, genotype, subgenotype or '']
     for seg in output_segments_order:
-        v, n = ver_predictions[seg]
-        tsv_row.append(v if n is None else '?')
-        if n is not None:
-            notes_col.append(f'{seg}: {n}')
+        seg_pred = ver_predictions[seg]
+        tsv_row.append(seg_pred.Version if seg_pred.Warnings == '' else '?')
+        if seg_pred.Warnings != '':
+            notes_col.append(f'{seg}: {seg_pred.Warnings}')
     
     tsv_row.append('; '.join(notes_col))
     return tsv_row
