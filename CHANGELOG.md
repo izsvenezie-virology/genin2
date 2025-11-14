@@ -1,5 +1,10 @@
 # Genin2 changelog
 
+## Version 2.1.5, 14/11/2025
+
+- Fix a critical bug introduced in v2.1.4 that labelled all samples as "unassigned"
+
+
 ## Version 2.1.4, 14/11/2025
 
 - Add subgenotype: `DI.2.1`
