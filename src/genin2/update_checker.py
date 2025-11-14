@@ -1,9 +1,10 @@
 from threading import Thread
 import requests, tempfile, time, logging
 from pathlib import Path
+from typing import Optional
 
 
-_thr: Thread | None = None
+_thr: Optional[Thread] = None
 latest_version = None
 
 

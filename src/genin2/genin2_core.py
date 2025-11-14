@@ -1,13 +1,13 @@
 from click import File
 import importlib_resources, joblib, sys, csv, logging, time
-from typing import List, Tuple, Optional, Any
+from typing import List, Tuple, Optional, Any, NamedTuple
 import genin2.update_checker as update_checker
 from genin2.di_discriminator import DIDiscriminator
 from genin2.utils import alignment_refs, read_fasta, pairwise_alignment, encode_sequence, \
     InvalidEncoding
 
 
-__version__ = '2.1.4-beta'
+__version__ = '2.1.4'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
@@ -18,6 +18,8 @@ genotype2versions: dict[str, dict[str, str]] = {}
 models: dict[str, Any]
 output_segments_order = ['PB2', 'PB1', 'PA', 'NP', 'NA', 'MP', 'NS']
 di_discr: DIDiscriminator
+
+GenotypePrediction = NamedTuple('GenotypePrediction', [('GenotypeName', str), ('Warnings', Optional[str])])
 
 
 def critical_error(msg: str, ex: Optional[Exception] = None) -> None:
@@ -87,7 +89,7 @@ def init_data() -> None:
         critical_error("Couldn't load DI discriminator models", e)
 
 
-def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, Tuple[str, str]]]:
+def predict_sample(sample: dict[str, str]) -> Tuple[GenotypePrediction, dict[str, Tuple[str, str]]]:
     ver_predictions: dict[str, Tuple[str, str]] = {}
     low_confidence = False
 
@@ -101,7 +103,7 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, Tuple[str, st
         v, n = predict_seg_version(seg_name, seq)
         logging.debug(f"{seg_name:3s} -> ({v}, {n})")
         ver_predictions[seg_name] = (v, n)
-        if n is not None:
+        if n != '':
             low_confidence = True
     
     for seg_name in alignment_refs.keys():
@@ -109,21 +111,21 @@ def predict_sample(sample: dict[str, str]) -> Tuple[str, dict[str, Tuple[str, st
             ver_predictions[seg_name] = ('?', 'missing')
             low_confidence = True
 
-    genotype = (None, None)
-    compatible = get_compatible_genotypes({s: (v if x is None else '?') for s, (v, x) in ver_predictions.items()})
-    if len(compatible) == 1 and not low_confidence:
-        genotype = (compatible[0], None)
-    elif len(compatible) == 0:
-        genotype = ('[unassigned]', 'unknown composition')
-    elif len(compatible) > MAX_COMPATIBLE_GENS:
-        genotype = ('[unassigned]', 'insufficient data')
+    genotype = GenotypePrediction('', None)
+    compatibles = get_compatible_genotypes({s: (v if x is None else '?') for s, (v, x) in ver_predictions.items()})
+    if len(compatibles) == 1 and not low_confidence:
+        genotype = GenotypePrediction(compatibles[0], None)
+    elif len(compatibles) == 0:
+        genotype = GenotypePrediction('[unassigned]', 'unknown composition')
+    elif len(compatibles) > MAX_COMPATIBLE_GENS:
+        genotype = GenotypePrediction('[unassigned]', 'insufficient data')
     else:
-        genotype = ('[unassigned]', f'compatible with {", ".join(compatible)}')
+        genotype = GenotypePrediction('[unassigned]', f'compatible with {", ".join(compatibles)}')
 
     return genotype, ver_predictions
 
 
-def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, str|None]:
+def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, str]:
     try:
         encoded_seq = pairwise_alignment(alignment_refs[seg_name], seq)
         encoded_seq = encode_sequence(encoded_seq)
@@ -143,7 +145,7 @@ def predict_seg_version(seg_name: str, seq: str) -> Tuple[str, str|None]:
         df = [df] if isinstance(df, float) else df
         df = ','.join(f'{v:6.2f}' for v in df)
         logging.debug(f"{seg_name:3s}     {df}")
-    return (prediction, None if prediction != '?' else 'unassigned')
+    return (prediction, '' if prediction != '?' else 'unassigned')
 
 
 def get_compatible_genotypes(versions: dict[str, str]) -> List[str]:
