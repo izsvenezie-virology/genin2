@@ -1,8 +1,8 @@
 # Genin2
 
-Genin2 is a lightining-fast bioinformatic tool to predict genotypes for clade 2.3.4.4b H5Nx viruses collected in Europe since October 2020. Genotypes are assigned using the methods described in [this article](https://doi.org/10.1093/ve/veae027). Genin2 identifies only epidemiologically relevant European genotypes, i.e., detected in at least 3 viruses collected from at least 2 countries. You can inspect the up-to-date list of supported genotypes in [this file](src/genin2/compositions.tsv).
+Genin2 is a lightning-fast bioinformatics tool to predict genotypes for clade 2.3.4.4b H5Nx viruses collected in Europe since October 2020. Genotypes are assigned using the methods described in [this article](https://doi.org/10.1093/ve/veae027). Genin2 identifies only epidemiologically relevant European genotypes, i.e., detected in at least 3 viruses collected from at least 2 countries. You can inspect the up-to-date list of supported genotypes in [this file](src/genin2/compositions.tsv).
 
-Note that, as of version 2.1.0, Genin2 is also cabable of distinguishing the `DI`, `DI.1`, and `DI.2` subgenotypes.
+Genin2 can also distinguish the four subtypes of `EA-2024-DI`: `DI`, `DI.1`, `DI.2`, and `DI.2.1`.
 
 ## Table of contents:
 
@@ -76,14 +76,13 @@ The results table consists of 11 columns:
 
 - **Column 3**: Sub-genotype
 
-  For genotypes where sub-clustering is important, as is `EA-2024-DI`, subgenotype names such as `DI`, `DI.1`, and `DI.2` will be specified in this column.
+  For genotypes where sub-clustering is important, as is `EA-2024-DI`, subgenotype names such as `DI`, `DI.1`, `DI.2`, and `DI.2.1` will be specified in this column.
 
 - **Columns 4 to 10**: PB2, PB1, PA, NP, NA MP, NS
 
   The version that each segment is classified as.
   - If a version prediction is not available, a `?` is displayed, with additional information in the *Notes* column.
   - Note: HA is ignored, as all samples are assumend to bellong to the 2.3.4.4b H5 clade.
-  - Note: MP is always assumed to be version "20", as it is the only version present in Genin2's genotypes list.
 
 - **Column 11**: Notes
 
@@ -105,7 +104,7 @@ The results table consists of 11 columns:
 ### *Q: Which genotypes are recognized by Genin2?*
 #### Answer:
 
-Genin2's prediction models are regularely updated to include relevant new genotypes. You can inspect the table on which predictions are based upon by opening the file [src/genin2/compositions.tsv](src/genin2/compositions.tsv). Generally speaking, we aim to support all epidemiologically relevant European genotypes, i.e., those observed in at least 3 occurences in at least 2 different countries. Additionally, as of version 2.1.0, subgenotypes of `EA-2024-DI` are also supported.
+Genin2's prediction models are regularely updated to include relevant new genotypes. You can inspect the table on which predictions are based upon by opening the file [src/genin2/compositions.tsv](https://github.com/izsvenezie-virology/genin2/blob/master/src/genin2/compositions.tsv). Generally speaking, we aim to support all epidemiologically relevant European genotypes, i.e., those observed in at least 3 occurences in at least 2 different countries. Additionally, as of version 2.1.0, subgenotypes of `EA-2024-DI` are also supported.
 
 ### *Q: What does "low quality" mean when a sequence is flagged as discarded?*
 #### Answer:
@@ -132,7 +131,7 @@ Yes, you can use how many samples you wish.
 ### *Q: Are my sequences required to have all segments?*
 #### Answer:
 
-No, any number of available segments is accepted by the program. Clearly, missing genes might prevent the unique assignment of a genotype, but you will nonetheless gain knowledge on the versions of the processed segments. Moreover, HA and MP are ignored regardless: the former is assumed from the clade, while the latter, as of now, is only present in the dataset with the version "20".
+No, any number of available segments is accepted by the program. Clearly, missing genes might prevent the unique assignment of a genotype, but you will nonetheless gain knowledge on the versions of the processed segments. Moreover, HA is ignored regardless, as it is assumed from the clade.
 
 ### *Q: Do sequences need to be complete?*
 #### Answer:
