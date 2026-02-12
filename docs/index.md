@@ -47,5 +47,7 @@ Until the publication please cite the GitHub repository:
 
 
 ## Fundings
+This research was supported by the EU funding within the NextGeneration EU-MUR PNRR Extended Partnership initiative on Emerging Infectious Diseases (Project no. PE00000007, INF-ACT).
 
-This work was supported by the NextGeneration EU-MUR PNRR Extended Partnership initiative on Emerging Infectious Diseases (Project no. PE00000007, INF-ACT) and by Kappa-Flu project - Funded by the European Union under Grant Agreement (101084171). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or REA. Neither the European Union nor the granting authority can be held responsible for them.
+This work was funded by the European Union under grant agreement (101084171) - (Kappa-Flu). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or REA. Neither the European Union nor the granting authority can be held responsible for them.
+
