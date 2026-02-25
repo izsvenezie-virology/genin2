@@ -1,6 +1,6 @@
 # Genin2
 
-Genin2 is a lightning-fast bioinformatics tool to predict genotypes for clade 2.3.4.4b H5Nx viruses collected in Europe since October 2020. Genotypes are assigned using the methods described in [this article](https://doi.org/10.1093/ve/veae027). Genin2 identifies only epidemiologically relevant European genotypes, i.e., detected in at least 3 viruses collected from at least 2 countries. You can inspect the up-to-date list of supported genotypes in [this file](src/genin2/compositions.tsv).
+Genin2 is a lightning-fast bioinformatics tool to predict genotypes for clade 2.3.4.4b H5Nx viruses collected in Europe since October 2020. Genotypes are assigned using the methods described in [this article](https://doi.org/10.1093/ve/veae027). Genin2 identifies only epidemiologically relevant European genotypes, i.e., detected in at least 3 viruses collected from at least 2 countries. You can inspect the up-to-date list of supported genotypes in [this file](src/genin2/compositions.tsv). Details on how the ML models are trained are available in the `training` branch of the GitHub repository.
 
 Genin2 can also distinguish the four sublineages of `EA-2024-DI`: `DI`, `DI.1`, `DI.2`, and `DI.2.1`.
 
