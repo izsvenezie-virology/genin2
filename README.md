@@ -2,9 +2,14 @@
 
 Dependencies:
 - Python >= 3.9
-- Biopython (tested wih 1.85)
+- Biopython
 - scikit-learn
 - matplotlib
+
+
+## 0. Assemble your dataset
+
+Details on how to organize and format your sequences are reported in the docstrings of `build_dataset.py`-
 
 
 ## 1. Build the dataset
