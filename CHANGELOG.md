@@ -1,5 +1,9 @@
 # Genin2 changelog
 
+## Version 2.1.6, 08/04/2026
+
+- Add genotype: **EA-2024-DV**
+
 ## Version 2.1.5, 14/11/2025
 
 - Fix a critical bug introduced in v2.1.4 that labelled all samples as "unassigned"
