@@ -25,7 +25,14 @@ Genin2 can also distinguish the four sublineages of `EA-2024-DI`: `DI`, `DI.1`, 
 
 ## Installation
 
-**Genin2** is compatible with Windows, Linux, and macOS. Before proceeding, please ensure you have already installed [Python](https://www.python.org/downloads/) and [Pip](https://pypi.org/project/pip/) (the latter is usually already included with the Python installation). Then, open a terminal and run:
+**Genin2** is compatible with Windows, Linux, and MacOS. Before proceeding, please ensure you have already installed [Python](https://www.python.org/downloads/) and [Pip](https://pypi.org/project/pip/) (the latter is usually already included with the Python installation).
+
+> Troubleshooting tip: if you have installed Python but the `pip` command doen't work, try using `pip3` in its place.
+
+> Troubleshooting tip [MacOS]: if `pip install` fails, ensure you have gcc or clang installed (needed to build scikit-learn). If not, run `xcode-select --install`.
+
+
+Then, open a terminal and run:
 
 ```sh
 pip install genin2

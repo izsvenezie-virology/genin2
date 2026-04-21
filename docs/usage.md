@@ -44,14 +44,13 @@ The results table consists of 11 columns:
 
 - **Column 3**: Sub-genotype
 
-  For genotypes where sub-clustering is important, as is `EA-2024-DI`, subgenotype names such as `DI`, `DI.1`, and `DI.2` will be specified in this column.
+  For genotypes where sub-clustering is important, as is `EA-2024-DI`, subgenotype names such as `DI`, `DI.1`, `DI.2`, and `DI.2.1` will be specified in this column.
 
 - **Columns 4 to 10**: PB2, PB1, PA, NP, NA MP, NS
 
   The version that each segment is classified as.
   - If a version prediction is not available, a `?` is displayed, with additional information in the *Notes* column.
   - Note: HA is ignored, as all samples are assumend to bellong to the 2.3.4.4b H5 clade.
-  - Note: MP is always assumed to be version "20", as it is the only version present in Genin2's genotypes list.
 
 - **Column 11**: Notes
 

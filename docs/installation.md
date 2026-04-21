@@ -15,13 +15,19 @@ Genin2 can be installed using two different methods, based on your preference an
 
 ## Method 1: PIP
 
-Before proceeding, please ensure you have already installed [Python](https://www.python.org/downloads/) and [Pip](https://pypi.org/project/pip/) (the latter is usually already included with the Python installation). Then, open a terminal and run:
+Before proceeding, please ensure you have already installed [Python](https://www.python.org/downloads/) and [Pip](https://pypi.org/project/pip/) (the latter is usually already included with the Python installation).
+
+> Troubleshooting tip: if you have installed Python but the `pip` command doen't work, try using `pip3` in its place.
+
+> Troubleshooting tip [MacOS]: if `pip install` fails, ensure you have gcc or clang installed (needed to build scikit-learn). If not, run `xcode-select --install`.
+
+Then, open a terminal and run:
 
 ```sh
 pip install genin2
 ```
 
-To update the program and include any new genotype that might have been added, run:
+To **update** the program and include any new genotype that might have been added, run:
 
 ```sh
 pip install --upgrade genin2

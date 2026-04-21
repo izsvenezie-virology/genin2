@@ -19,7 +19,7 @@ permalink: /faqs
 ## *Q: Which genotypes are recognized by Genin2?*
 ### Answer:
 
-Genin2's prediction models are regularely updated to include relevant new genotypes. You can inspect the table on which predictions are based upon by opening the file [src/genin2/compositions.tsv](https://github.com/izsvenezie-virology/genin2/blob/master/src/genin2/compositions.tsv). Generally speaking, we aim to support all epidemiologically relevant European genotypes, i.e., those observed in at least 3 occurences in at least 2 different coutnries.
+Genin2's prediction models are regularely updated to include relevant new genotypes. You can inspect the table on which predictions are based upon by opening the file [src/genin2/compositions.tsv](https://github.com/izsvenezie-virology/genin2/blob/master/src/genin2/compositions.tsv). Generally speaking, we aim to support all epidemiologically relevant European genotypes, i.e., those observed in at least 3 occurences in at least 2 different countries. Additionally, as of version 2.1.0, subgenotypes of `EA-2024-DI` are also supported.
 
 ## *Q: What does "low quality" mean when a sequence is flagged as discarded?*
 ### Answer:
