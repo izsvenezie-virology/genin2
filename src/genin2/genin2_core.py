@@ -1,13 +1,13 @@
 from click import File
 import importlib_resources, joblib, sys, csv, logging, time
-from typing import List, Tuple, Optional, Any, NamedTuple
+from typing import Generator, List, Tuple, Optional, Any, NamedTuple
 import genin2.update_checker as update_checker
 from genin2.di_discriminator import DIDiscriminator
 from genin2.utils import alignment_refs, read_fasta, pairwise_alignment, encode_sequence, \
     InvalidEncoding
 
 
-__version__ = '2.1.6'
+__version__ = '2.1.7'
 __author__ = 'Alessandro Sartori'
 __contact__ = 'asartori@izsvenezie.it'
 
@@ -48,7 +48,7 @@ def print_model_info() -> None:
     print(f"Models/1 ...... {models['build_date']}")
     for k, v in models.items():
         if k != 'build_date':
-            print(f" {k:>3s} .......... {len(v.classes_)} classes")
+            print(f" {k:>3s} .......... {len(v[0].classes_)} classes")
     print(f"Models/2 ...... {di_discr.model_build_date}")
     print()
     print(f"NumPy ......... {numpy.__version__}")
@@ -95,25 +95,20 @@ def predict_sample(sample: dict[str, str]) -> Tuple[GenotypePrediction, dict[str
     low_confidence = False
 
     for seg_name, seq in sample.items():        
-        seq_cov = (len(seq) - seq.upper().count('N')) / len(alignment_refs[seg_name])
-        if (seq_cov < MIN_SEQ_COV):
-            ver_predictions[seg_name] = SegmentPrediction('?', f'low quality ({int(seq_cov*100)}% valid)')
-            low_confidence = True
-            continue
-        
         seg_pred = predict_seg_version(seg_name, seq)
-        logging.debug(f"{seg_name:3s} -> ({seg_pred.Version}, {seg_pred.Warnings})")
         ver_predictions[seg_name] = seg_pred
+        logging.debug(f"{seg_name:3s} -> ({seg_pred.Version}, {seg_pred.Warnings})")
+
         if seg_pred.Warnings != '':
             low_confidence = True
     
     for seg_name in alignment_refs.keys():
         if seg_name not in ver_predictions:
-            ver_predictions[seg_name] = SegmentPrediction('?', 'missing')
+            ver_predictions[seg_name] = SegmentPrediction('?/m', 'missing')
             low_confidence = True
 
     genotype = GenotypePrediction('', 'internal error')
-    compatibles = get_compatible_genotypes({s: (pred.Version if pred.Warnings == '' else '?') for s, pred in ver_predictions.items()})
+    compatibles = get_compatible_genotypes({seg: (pred.Version if pred.Warnings == '' else '?') for seg, pred in ver_predictions.items()})
     if len(compatibles) == 1 and not low_confidence:
         genotype = GenotypePrediction(compatibles[0], None)
     elif len(compatibles) == 0:
@@ -130,23 +125,33 @@ def predict_seg_version(seg_name: str, seq: str) -> SegmentPrediction:
     try:
         encoded_seq = pairwise_alignment(alignment_refs[seg_name], seq)
         encoded_seq = encode_sequence(encoded_seq)
+
+        seq = seq.upper()
+        seq_cov = sum(seq.count(nt) for nt in 'ACGT') / len(alignment_refs[seg_name])
+        if (seq_cov < MIN_SEQ_COV):
+            return SegmentPrediction('?/q', f'low quality ({int(seq_cov*100)}% valid)')
     except InvalidEncoding as ex:
         logging.error(f"Failed to encode {seg_name}. {str(ex)}")
-        return SegmentPrediction('?', 'nucleotide encoding error')
+        return SegmentPrediction('?/n', 'nucleotide encoding error')
     except Exception as ex:
         logging.error(f"Failed to align and encode {seg_name} sequence. {type(ex).__name__}, {str(ex)}")
-        return SegmentPrediction('?', 'model error')
+        return SegmentPrediction('?/?', 'model error')
 
-    model = models[seg_name]
-    prediction = model.predict([encoded_seq])[0]
+    clf, prob_thresh = models[seg_name]
+    probs = list(clf.predict_proba([encoded_seq])[0])
+    max_prob = max(probs)
+    label = clf.classes_[probs.index(max_prob)]
+
     if logging.root.level <= logging.DEBUG:
-        classes = ' '.join(f'{c:>6s}' for c in model.classes_)
+        classes = ' '.join(f'{c:>6s}' for c in clf.classes_)
         logging.debug(f"{seg_name:3s} df: {classes}")
-        df = model.decision_function([encoded_seq])[0]
-        df = [df] if isinstance(df, float) else df
-        df = ','.join(f'{v:6.2f}' for v in df)
+        df = ','.join(f'{v:6.2f}' for v in probs)
         logging.debug(f"{seg_name:3s}     {df}")
-    return SegmentPrediction(prediction, '' if prediction != '?' else 'unassigned')
+
+    if max_prob >= prob_thresh and not label.startswith("reject/"):
+        return SegmentPrediction(label, '')
+    else:
+        return SegmentPrediction('?/u', 'unassigned')
 
 
 def get_compatible_genotypes(versions: dict[str, str]) -> List[str]:
@@ -168,7 +173,7 @@ def get_compatible_genotypes(versions: dict[str, str]) -> List[str]:
     return list(gset.keys())
 
 
-def preload_samples(file: File) -> dict[str, dict[str, str]]:
+def load_samples(file: File): # -> Generator[tuple[str, dict[str, str]]]:
     '''
     Load all samples contained in a FASTA file into a dictionary. The keys are the sample names and the values are dictionaries
     mapping each segment to the corresponding sequence.
@@ -186,12 +191,18 @@ def preload_samples(file: File) -> dict[str, dict[str, str]]:
             name, seg_name = name.rsplit('_', 1)
         except:
             logging.error("Discarding sequence, invalid FASTA header: %s", name)
+            logging.error("Remember to format sample names with a trailing _SEG")
             continue
         
         if seg_name not in alignment_refs.keys():
-            if seg_name != 'HA' and seg_name != 'MP':
+            if seg_name == 'M':
+                seg_name = 'MP'
+            elif seg_name == 'HA':
+                # HA is ignored
+                continue
+            else:
                 logging.warning("Segment '%s' in sample '%s' is not recognized", seg_name, name)
-            continue
+                continue
         
         if name not in samples:
             samples[name] = {}
@@ -199,8 +210,9 @@ def preload_samples(file: File) -> dict[str, dict[str, str]]:
         if seg_name in samples[name]:
             logging.warning("Segment %s for sample %s was defined multiple times (keeping the last)", seg_name, name)
         samples[name][seg_name] = seq
-    
-    return samples
+
+    for k, v in samples.items():
+        yield (k, v)
 
 
 def prediction_to_tsv(sample_name, genotype, subgenotype, genotype_notes, ver_predictions):
@@ -211,7 +223,7 @@ def prediction_to_tsv(sample_name, genotype, subgenotype, genotype_notes, ver_pr
     tsv_row = [sample_name, genotype, subgenotype or '']
     for seg in output_segments_order:
         seg_pred = ver_predictions[seg]
-        tsv_row.append(seg_pred.Version if seg_pred.Warnings == '' else '?')
+        tsv_row.append(seg_pred.Version)
         if seg_pred.Warnings != '':
             notes_col.append(f'{seg}: {seg_pred.Warnings}')
     
@@ -239,16 +251,13 @@ def run(in_file: File, out_file: File, **kwargs):
     except Exception as e:
         critical_error(f"Couldn't write to output file '{out_file}'", e)
 
-    logging.info("Preloading samples")
-    start_time = time.time()
-    samples = preload_samples(in_file)
-    logging.info("Read %d samples in %.1f seconds", len(samples), time.time() - start_time)
-
     logging.info("Starting analysis...")
     start_time = time.time()
+    tot_samples = 0
     tot_seqs = 0
-    for sample_name, sample in samples.items():
+    for sample_name, sample in load_samples(in_file):
         logging.info(f"Processing {len(sample)} segments for {sample_name}")
+        tot_samples += 1
         tot_seqs += len(sample)
 
         subgenotype = None
@@ -261,7 +270,7 @@ def run(in_file: File, out_file: File, **kwargs):
 
     tot_time_s = time.time() - start_time
     h, m, s = (tot_time_s // 3600, tot_time_s % 3600 // 60, tot_time_s % 3600 % 60)
-    logging.info(f"Processed {len(samples)} samples ({tot_seqs} sequences) in {h:.0f}h {m:.0f}m {s:.1f}s")
+    logging.info(f"Processed {tot_samples} samples ({tot_seqs} sequences) in {h:.0f}h {m:.0f}m {s:.2f}s")
 
     latest_version = update_checker.get_result()
     if latest_version is not None and str(latest_version) != str(__version__):
