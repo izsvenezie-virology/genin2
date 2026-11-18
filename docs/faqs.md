@@ -34,7 +34,7 @@ By default, this minimum ratio is set to 0.7. If you wish to raise or relax this
 Yes. The header should follow this format:
 - Start with the `>` character
 - Contain a sample identifier, such as `A/species/nation/XYZ`. This part can contain any text you wish, and it will be used to group segments together. Ensure it is the same for all segments belonging to the same sample, and that there are no duplicates across different samples.
-- End with the undercsore character (`_`) and one of the following segment names: `PB2`, `PB1`, `PA`, `HA`, `NP`, `NA`, `MP`, `NS`. The correct association between sequence and segment is essential for the correct choice of the prediction parameters.
+- End with the undercsore character (`_`) and one of the following segment names: `PB2`, `PB1`, `PA`, `HA`, `NP`, `NA`, `MP` (alias `M`), `NS`. The correct association between sequence and segment is essential for the correct choice of the prediction parameters.
 A valid header might look like this: `>A/chicken/Italy/ID_XXYYZZ/1997_PA`
 
 

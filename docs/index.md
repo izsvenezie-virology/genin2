@@ -11,19 +11,17 @@ Genin2 is a lightining-fast bioinformatic tool to predict genotypes for clade 2.
 
 Genin2 can also distinguish the four sublineages of `EA-2024-DI`: `DI`, `DI.1`, `DI.2`, and `DI.2.1`.
 
-
-## Table of contents:
+## Table of contents
 
 - [Features](#features)
 - [Installation](./install)
 - [Usage](./usage)
   - [Input guidelines](./usage#input-guidelines)
   - [Output format and interpretation](./usage#output-format-and-interpretation)
-- [FAQs](#faqs)
+- [FAQs](./faqs)
 - [How to cite Genin2](#cite-genin2)
 - [License](#license)
 - [Fundings](#fundings)
-
 
 ## Features
 
@@ -32,7 +30,6 @@ Genin2 can also distinguish the four sublineages of `EA-2024-DI`: `DI`, `DI.1`, 
 - :cherry_blossom: **Easy on the resources**: genin2 can be run on any laptop; 1 CPU and 200 MB of RAM is all it takes
 - :zap: **Lightning-fast**: on a single 2.30 GHz core, Genin2 can process more than 1'200 sequences per minute
 
-
 ## Cite Genin2
 
 We are currently writing the paper.
@@ -40,14 +37,12 @@ Until the publication please cite the GitHub repository:
 
 [https://github.com/izsvenezie-virology/genin2](https://github.com/izsvenezie-virology/genin2)
 
-
 ## License
 
 **Genin2** is licensed under the GNU Affero v3 license (see [LICENSE](LICENSE)).
 
-
 ## Fundings
+
 This research was supported by the EU funding within the NextGeneration EU-MUR PNRR Extended Partnership initiative on Emerging Infectious Diseases (Project no. PE00000007, INF-ACT).
 
 This work was funded by the European Union under grant agreement (101084171) - (Kappa-Flu). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or REA. Neither the European Union nor the granting authority can be held responsible for them.
-

@@ -22,10 +22,12 @@ genin2 --help
 ## Input guidelines
 
 **Genin2** expects the input to be a nucleotidic, IUPAC-encoded, FASTA file. Please ensure that each sequence name starts with the `>` character and ends with an undersore (`_`) followed by the name of the segment, e.g.:
-```
+
+```plain
 >any_text|any_string/seq_name_PB1
                              ^^^^
 ```
+
 For additional deatils on the accepted input format, please see the [FAQs](./faqs) section.
 
 ## Output Format and Interpretation
@@ -48,9 +50,12 @@ The results table consists of 11 columns:
 
 - **Columns 4 to 10**: PB2, PB1, PA, NP, NA MP, NS
 
-  The version that each segment is classified as.
-  - If a version prediction is not available, a `?` is displayed, with additional information in the *Notes* column.
-  - Note: HA is ignored, as all samples are assumend to bellong to the 2.3.4.4b H5 clade.
+  The version that each segment is classified as. If a version prediction is not available, pne of the following flags is displayed, with additional information in the *Notes* column:
+  - `?/m`: missing; the segment was not found in the input file
+  - `?/q`: low quality; valid nucleotides are too few w.r.t. reference
+  - `?/n`: nucleotide error; invalid characters found in the sequence
+  - `?/u`: unassigned; the model failed to identify a cluster with proper confidence
+  - `?/?`: a more generic, unexpected internal error has occurred
 
 - **Column 11**: Notes
 
