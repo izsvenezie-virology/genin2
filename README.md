@@ -4,7 +4,7 @@ Genin2 is a lightning-fast bioinformatics tool to predict genotypes for clade 2.
 
 Genin2 can also distinguish the four sublineages of `EA-2024-DI`: `DI`, `DI.1`, `DI.2`, and `DI.2.1`.
 
-## Table of contents:
+## Table of contents
 
 - [Features](#features)
 - [Installation](#installation)
@@ -20,7 +20,7 @@ Genin2 can also distinguish the four sublineages of `EA-2024-DI`: `DI`, `DI.1`, 
 
 - :penguin: **Cross-platform**: Genin2 can be run on any platform that supports the Python interpreter. Including, but not limited to: Windows, Linux, MacOS.
 - :balloon: **Extremely lightweight**: the prediction models weight less than 1 MB
-- :cherry_blossom: **Easy on the resources**: genin2 can be run on any laptop; 1 CPU and 200 MB of RAM is all it takes
+- :cherry_blossom: **Easy on the resources**: genin2 can be run on any laptop
 - :zap: **Lightning-fast**: on a single 2.30 GHz core, Genin2 can process more than 1'200 sequences per minute
 
 ## Installation
@@ -30,7 +30,6 @@ Genin2 can also distinguish the four sublineages of `EA-2024-DI`: `DI`, `DI.1`, 
 > Troubleshooting tip: if you have installed Python but the `pip` command doen't work, try using `pip3` in its place.
 
 > Troubleshooting tip [MacOS]: if `pip install` fails, ensure you have gcc or clang installed (needed to build scikit-learn). If not, run `xcode-select --install`.
-
 
 Then, open a terminal and run:
 
@@ -61,10 +60,13 @@ genin2 --help
 ### Input guidelines
 
 **Genin2** expects the input to be a nucleotidic, IUPAC-encoded, FASTA file. Please ensure that each sequence name starts with the `>` character and ends with an undersore (`_`) followed by the name of the segment, e.g.:
+
 ```
 >any_text|any_string/seq_name_PB1
                              ^^^^
 ```
+
+Recognized segments are: `PB2`, `PB1`, `PA`, `HA` (ignored), `NP`, `NA`, `MP` (alias `M`), `NS`.
 For additional deatils on the accepted input format, please see the [FAQs](#faqs) section.
 
 ### Output Format and Interpretation

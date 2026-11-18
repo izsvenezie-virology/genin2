@@ -173,7 +173,7 @@ def get_compatible_genotypes(versions: dict[str, str]) -> List[str]:
     return list(gset.keys())
 
 
-def load_samples(file: File) -> Generator[tuple[str, dict[str, str]]]:
+def load_samples(file: File): # -> Generator[tuple[str, dict[str, str]]]:
     '''
     Load all samples contained in a FASTA file into a dictionary. The keys are the sample names and the values are dictionaries
     mapping each segment to the corresponding sequence.
@@ -211,7 +211,7 @@ def load_samples(file: File) -> Generator[tuple[str, dict[str, str]]]:
             logging.warning("Segment %s for sample %s was defined multiple times (keeping the last)", seg_name, name)
         samples[name][seg_name] = seq
 
-    for k, v in samples:
+    for k, v in samples.items():
         yield (k, v)
 
 
