@@ -1,5 +1,0 @@
-scikit-learn
-numpy
-joblib
-biopython
-matplotlib

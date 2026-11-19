@@ -23,7 +23,7 @@ clfs = {
     'PB2': RandomForestClassifier(n_jobs=4, n_estimators=100, criterion='gini', max_features=0.1, random_state=8),
 }
 MAX_SEQS = 100
-subgens = ['DI', 'DI.1', 'DI.2', 'DI.2.1']
+subgens = ['EA-2024-DI', 'EA-2024-DI.1', 'EA-2024-DI.2', 'EA-2024-DI.2.1']
 
 sub2seg2seq = {sg: {seg: [] for seg in alignment_refs.keys()} for sg in subgens}
 for sg in subgens:
