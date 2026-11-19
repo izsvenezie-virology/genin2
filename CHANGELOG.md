@@ -1,5 +1,9 @@
 # Genin2 changelog
 
+## Version 2.1.8, 19/11/2026
+
+- Fix FD and FE genotypes not being recognized
+
 ## Version 2.1.7, 18/11/2026
 
 - Add genotypes: **EA-2026-FA**, **EA-2026-FB**, **EA-2026-FC**, **EA-2025-FD**, **EA-2026-FE**
